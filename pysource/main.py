@@ -2,11 +2,18 @@ import argh
 
 from pysource import daemonizer
 
-def main(daemon=False):
+def run(daemon=False, kill_daemon=False):
     if daemon:
         daemonizer.start()
+    elif kill_daemon:
+        daemonizer.stop()
     else:
         print 'not daemon'
 
+
+def main():
+    argh.dispatch_command(run, completion=False)
+
+
 if __name__ == '__main__':
-    argh.dispatch_command(main, completion=False)
+    main()
