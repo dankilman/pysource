@@ -6,7 +6,7 @@ import signal
 import daemon
 import lockfile
 
-from pysource import env
+from pysource import env, server
 
 _pidfile_dir = env.pysource_dir
 _pidfile_path = os.path.join(_pidfile_dir, 'pidfile')
@@ -26,8 +26,7 @@ def start():
         return
     with _context:
         _write_pid()
-        from time import sleep
-        sleep(100)
+        server.run()
 
 
 def stop():
@@ -35,6 +34,7 @@ def stop():
         print 'daemon not running'
         return
     os.kill(_read_pid(), signal.SIGTERM)
+    os.remove(env.unix_socket_path)
 
 
 def _write_pid():

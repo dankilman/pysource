@@ -1,18 +1,33 @@
+import sys
+
 import argh
 
 from pysource import daemonizer
 
-def run(daemon=False, kill_daemon=False):
-    if daemon:
+def daemon(action):
+    if action == 'start':
         daemonizer.start()
-    elif kill_daemon:
+    elif action == 'stop':
         daemonizer.stop()
     else:
-        print 'not daemon'
+        raise argh.CommandError('unreconized action: {0} '
+                                '[valid: start, stop]'.format(action))
+
+
+def source(source_path):
+    pass
+
+
+def run(function_name, *args):
+    print function_name, args
 
 
 def main():
-    argh.dispatch_command(run, completion=False)
+    argh.dispatch_commands([
+        daemon,
+        source,
+        run
+    ], completion=False)
 
 
 if __name__ == '__main__':
