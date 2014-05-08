@@ -9,7 +9,8 @@ setup(
     description='Execute python functions from bash',
     zip_safe=False,
     install_requires=[
-        'argh'
+        'argh',
+        'python-daemon'
     ],
     entry_points = {}
 )
