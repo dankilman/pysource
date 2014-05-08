@@ -1,8 +1,10 @@
 import argh
 
+from pysource import daemonizer
+
 def main(daemon=False):
     if daemon:
-        print 'deamon'
+        daemonizer.start()
     else:
         print 'not daemon'
 
