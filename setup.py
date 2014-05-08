@@ -8,6 +8,8 @@ setup(
     packages=['pysource'],
     description='Execute python functions from bash',
     zip_safe=False,
-    install_requires=[],
+    install_requires=[
+        'argh'
+    ],
     entry_points = {}
 )
