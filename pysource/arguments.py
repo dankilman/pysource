@@ -14,22 +14,3 @@ class ArgTypeSpec(object):
 
     def parse(self, args):
         return [tpe(arg) for (tpe, arg) in zip(self.types, args)]
-
-
-if __name__ == '__main__':
-
-    def fun1(arg1):
-        pass
-
-    assert ArgTypeSpec(fun1).parse(['1']) == ['1']
-
-    def fun2(arg1=int, arg2=float, arg3=str):
-        pass
-
-    assert ArgTypeSpec(fun2).parse(['1', '2.2', '3']) == [1, 2.2, '3']
-
-    def fun3(arg1, arg2=int):
-        pass
-
-    assert ArgTypeSpec(fun3).parse(['1', '2']) == ['1', 2]
-
