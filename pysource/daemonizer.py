@@ -6,7 +6,9 @@ import signal
 import daemon
 import lockfile
 
-_pidfile_dir = os.path.expanduser('~/.pysource')
+from pysource import env
+
+_pidfile_dir = env.pysource_dir
 _pidfile_path = os.path.join(_pidfile_dir, 'pidfile')
 _pidfile = lockfile.FileLock(_pidfile_path)
 
