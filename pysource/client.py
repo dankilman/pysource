@@ -1,4 +1,5 @@
 import socket
+import json
 
 from pysource.env import unix_socket_path
 from pysource import protocol
@@ -7,24 +8,29 @@ from pysource import protocol
 def source_register(source_path):
     with open(source_path, 'r') as f:
         source_content = f.read()
-    def handler(req, res):
-        req.write(protocol.CLIENT_SOURCE_REGISTER_REQUEST)
-        req.write('\r\n')
-        req.write(len(source_content))
-        req.write('\r\n')
-        req.write(source_content)
-        res_type = res.read(1)
-        print res.read()
-    _do_request(handler)
+    result = do_request(
+        protocol.CLIENT_SOURCE_REGISTER_REQUEST,
+        {'source_content': source_content})
+    return result
 
 
-def _do_request(handler):
+def do_request(req_type, payload):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.connect(unix_socket_path)
     req = sock.makefile('wb', 0)
     res = sock.makefile('rb', -1)
     try:
-        handler(req, res)
+        req_body = json.dumps({
+            'type': req_type,
+            'payload': payload
+        })
+        req_body_len = len(req_body)
+        req.write(req_body_len)
+        req.write('\r\n')
+        req.write(req_body)
+
+        res_body_len = int(res.readline())
+        return json.loads(res.read(res_body_len))['payload']
     finally:
         req.close()
         res.close()

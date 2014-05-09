@@ -18,7 +18,7 @@ def daemon(action):
 
 
 def source(source_path):
-    client.source_register(source_path)
+    return client.source_register(source_path)
 
 
 def run(function_name, *args):

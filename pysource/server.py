@@ -1,3 +1,4 @@
+import json
 import os
 from SocketServer import (ThreadingUnixStreamServer,
                           StreamRequestHandler)
@@ -6,27 +7,34 @@ from pysource import env
 from pysource import protocol
 from pysource import request_context
 
+
+def _handle_source_register(payload):
+    exec payload['source_content']
+    names = [reg.name for reg in request_context.registered]
+    return {'names': names}
+
+
 class RequestHandler(StreamRequestHandler):
 
     def handle(self):
         req = self.rfile
         res = self.wfile
-        req_type = int(req.readline())
+
+        req_body_len = int(req.readline())
+
+        req_body = json.loads(req.read(req_body_len))
+        req_type = req_body['type']
+        req_payload = req_body['payload']
+
+        res_payload = 'none'
         if req_type == protocol.CLIENT_SOURCE_REGISTER_REQUEST:
-            _handle_source_register(req, res)
+            res_payload = _handle_source_register(req_payload)
 
-
-def _handle_source_register(req, res):
-    source_content_len = int(req.readline())
-    source_content = req.read(source_content_len)
-    exec source_content
-
-    print request_context.uuid
-    for reg in request_context.registered:
-        print reg
-
-    res.write(protocol.SERVER_SOURCE_RESPONSE_SUC)
-
+        res_body = json.dumps({'payload': res_payload})
+        res_body_len = len(res_body)
+        res.write(res_body_len)
+        res.write('\r\n')
+        res.write(res_body)
 
 def run():
     server = ThreadingUnixStreamServer(env.unix_socket_path,
