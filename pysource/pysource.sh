@@ -26,5 +26,5 @@ __pysource_source()
 
 __pysource_run()
 {
-    ${__pysource_python} -m pysource.main run $@
+    ${__pysource_python} -m pysource.main run "$@"
 }
