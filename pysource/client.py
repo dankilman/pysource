@@ -9,7 +9,7 @@ def source_register(source_path):
     with open(source_path, 'r') as f:
         source_content = f.read()
     result = do_request(
-        protocol.CLIENT_SOURCE_REGISTER_REQUEST,
+        protocol.SOURCE_REGISTER_REQUEST,
         {'source_content': source_content})
     return result
 
