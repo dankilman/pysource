@@ -21,19 +21,9 @@ source $(which pysource.sh)
 Controlling the daemon
 ---
 
-To start the daemon
+To start/stop/restart the daemon
 ```bash
-pysource daemon start
-```
-
-To stop the daemon
-```bash
-pysource daemon stop
-```
-
-To restart the daemon
-```bash
-pysource daemon restart
+pysource daemon [start, stop, restart] [--force]
 ```
 
 If the daemon was not stopped in a clean manner, pass `--force` to either `start` or `restart`.
