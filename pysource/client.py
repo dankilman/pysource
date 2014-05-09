@@ -3,6 +3,7 @@ import json
 
 from pysource.env import unix_socket_path
 from pysource import protocol
+from pysource import shell
 
 
 def source_register(source_path):
@@ -12,7 +13,7 @@ def source_register(source_path):
         protocol.SOURCE_REGISTER_REQUEST, {
             'source_content': source_content
         })
-    return result
+    return shell.create_shell_functions(result['names'])
 
 
 def run_function(function_name, args):
@@ -21,7 +22,7 @@ def run_function(function_name, args):
             'name': function_name,
             'args': args
         })
-    return result
+    return result['result']
 
 
 def do_request(req_type, payload):
