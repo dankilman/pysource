@@ -4,6 +4,7 @@ pysource
 Execute python from bash scripts (sort of).
 
 Example:
+TODO
 
 
 Installation
@@ -35,9 +36,9 @@ This logic should probably be managed by `systemd` or something similiar, but th
 
 Usage
 ---
-
+TODO
 
 
 License
 ---
-
+TODO
