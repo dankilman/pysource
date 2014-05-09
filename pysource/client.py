@@ -1,12 +1,16 @@
 import socket
 import json
+import os
 
 from pysource.env import unix_socket_path
 from pysource import protocol
 from pysource import shell
+from pysource import ExecutionError
 
 
 def source_register(source_path):
+    if not os.path.exists(source_path):
+        raise ExecutionError('{0} cannot be loaded'.format(source_path))
     with open(source_path, 'r') as f:
         source_content = f.read()
     result = do_request(
@@ -41,7 +45,12 @@ def do_request(req_type, payload):
         req.write(req_body)
 
         res_body_len = int(res.readline())
-        return json.loads(res.read(res_body_len))['payload']
+        res_body = json.loads(res.read(res_body_len))
+        res_body_payload = res_body['payload']
+        if res_body['status'] == protocol.RESPONSE_STATUS_ERROR:
+            error = res_body_payload['error']
+            raise ExecutionError('execution failed: {0}'.format(error))
+        return res_body_payload
     finally:
         req.close()
         res.close()

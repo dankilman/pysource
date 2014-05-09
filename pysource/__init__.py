@@ -1,6 +1,7 @@
 import functools
 import threading
 import uuid
+import argh
 
 from pysource import registry
 
@@ -23,3 +24,7 @@ def function(func, *args, **kwargs):
         return func(*args, **kwargs)
     registry.register(func, wrapper, request_context)
     return wrapper
+
+
+class ExecutionError(argh.CommandError):
+    pass
