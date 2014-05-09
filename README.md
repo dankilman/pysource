@@ -1,11 +1,11 @@
 pysource
-========
+===
 
 Execute python from bash scripts (sort of).
 
 
 Installation
-===========
+---
 
 When (and if) this package will be not as half-baked as it is now, I will probably push it to PyPI.
 ```bash
@@ -19,7 +19,7 @@ source $(which pysource.sh)
 ```
 
 Controlling the daemon
-======================
+---
 
 To start the daemon
 ```bash
