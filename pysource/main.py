@@ -4,13 +4,19 @@ from pysource import daemonizer
 from pysource import client
 
 
-def daemon(action):
+def daemon(action, force=False):
     if action == 'start':
-        daemonizer.start()
+        started = daemonizer.start(force)
+        if not started:
+            return 'Daemon already started'
     elif action == 'stop':
-        daemonizer.stop()
+        stopped = daemonizer.stop()
+        if stopped:
+            return 'Daemon stopped'
+        else:
+            return 'Daemon not running'
     elif action == 'restart':
-        daemonizer.restart()
+        daemonizer.restart(force)
     else:
         raise argh.CommandError('unrecognized action: {0} '
                                 '[valid: start, stop, restart]'.format(action))

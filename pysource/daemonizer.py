@@ -20,29 +20,32 @@ _context = daemon.DaemonContext(
 )
 
 
-def start():
+def start(force):
     _make_pysource_dir()
-    if _pidfile.is_locked():
-        print 'daemon already started'
-        return
+    if force:
+        _pidfile.break_lock()
+        if os.path.exists(env.unix_socket_path):
+            os.remove(env.unix_socket_path)
+    elif _pidfile.is_locked():
+        return False
     with _context:
-        print 'daemon started'
         _write_pid()
         server.run()
 
 
 def stop():
     if not _pidfile.is_locked():
-        print 'daemon not running'
-        return
+        return False
     os.kill(_read_pid(), signal.SIGTERM)
     os.remove(env.unix_socket_path)
+    return True
 
 
-def restart():
-    stop()
-    time.sleep(1)
-    start()
+def restart(force):
+    if _pidfile.is_locked() and not force:
+        stop()
+        time.sleep(1)
+    start(force)
 
 
 def _write_pid():
