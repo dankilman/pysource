@@ -2,6 +2,7 @@ import os
 import sys
 import errno
 import signal
+import time
 
 import daemon
 import lockfile
@@ -25,6 +26,7 @@ def start():
         print 'daemon already started'
         return
     with _context:
+        print 'daemon started'
         _write_pid()
         server.run()
 
@@ -35,6 +37,12 @@ def stop():
         return
     os.kill(_read_pid(), signal.SIGTERM)
     os.remove(env.unix_socket_path)
+
+
+def restart():
+    stop()
+    time.sleep(1)
+    start()
 
 
 def _write_pid():

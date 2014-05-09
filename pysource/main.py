@@ -3,19 +3,22 @@ import sys
 import argh
 
 from pysource import daemonizer
+from pysource import client
 
 def daemon(action):
     if action == 'start':
         daemonizer.start()
     elif action == 'stop':
         daemonizer.stop()
+    elif action == 'restart':
+        daemonizer.restart()
     else:
         raise argh.CommandError('unreconized action: {0} '
-                                '[valid: start, stop]'.format(action))
+                                '[valid: start, stop, restart]'.format(action))
 
 
 def source(source_path):
-    pass
+    client.source_register(source_path)
 
 
 def run(function_name, *args):
