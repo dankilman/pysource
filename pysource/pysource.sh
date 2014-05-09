@@ -28,3 +28,13 @@ __pysource_run()
 {
     ${__pysource_python} -m pysource.main run "$@"
 }
+
+def()
+{
+    local definition="$1"
+    local fulldefinition="import pysource
+@pysource.function
+def $definition
+"
+    __pysource_source <(echo "$fulldefinition")
+}
