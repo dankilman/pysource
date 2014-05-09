@@ -12,7 +12,7 @@ def daemon(action):
     elif action == 'restart':
         daemonizer.restart()
     else:
-        raise argh.CommandError('unreconized action: {0} '
+        raise argh.CommandError('unrecognized action: {0} '
                                 '[valid: start, stop, restart]'.format(action))
 
 
@@ -21,7 +21,7 @@ def source(source_path):
 
 
 def run(function_name, *args):
-    print function_name, args
+    print client.run_function(function_name, args)
 
 
 def main():

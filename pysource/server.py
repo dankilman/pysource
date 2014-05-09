@@ -5,18 +5,34 @@ from SocketServer import (ThreadingUnixStreamServer,
 from pysource import env
 from pysource import protocol
 from pysource import request_context
+from pysource import registry
 
 
 def _handle_source_register(payload):
-    exec payload['source_content']
+    source_content = payload['source_content']
+
+    exec source_content
     names = [reg.name for reg in request_context.registered]
     return {'names': names}
 
 
+def _handle_run_function(payload):
+    function_name = payload['name']
+    args = payload['args']
+
+    result = registry.run_function(function_name, args)
+
+    return {'the_name': function_name,
+            'the_args': args,
+            'the_result': result}
+
+
 def _handle(req_type, payload):
-    handler = lambda payload: 'none'
+    handler = lambda _: 'none'
     if req_type == protocol.SOURCE_REGISTER_REQUEST:
         handler = _handle_source_register
+    elif req_type == protocol.RUN_FUNCTION_REQUEST:
+        handler = _handle_run_function
     return handler(payload)
 
 

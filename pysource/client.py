@@ -9,8 +9,18 @@ def source_register(source_path):
     with open(source_path, 'r') as f:
         source_content = f.read()
     result = do_request(
-        protocol.SOURCE_REGISTER_REQUEST,
-        {'source_content': source_content})
+        protocol.SOURCE_REGISTER_REQUEST, {
+            'source_content': source_content
+        })
+    return result
+
+
+def run_function(function_name, args):
+    result = do_request(
+        protocol.RUN_FUNCTION_REQUEST, {
+            'name': function_name,
+            'args': args
+        })
     return result
 
 
