@@ -4,6 +4,7 @@ from SocketServer import (ThreadingUnixStreamServer,
 
 from pysource import env
 from pysource import protocol
+from pysource import request_context
 
 class RequestHandler(StreamRequestHandler):
 
@@ -19,6 +20,11 @@ def _handle_source_register(req, res):
     source_content_len = int(req.readline())
     source_content = req.read(source_content_len)
     exec source_content
+
+    print request_context.uuid
+    for reg in request_context.registered:
+        print reg
+
     res.write(protocol.SERVER_SOURCE_RESPONSE_SUC)
 
 

@@ -14,7 +14,8 @@ registered = {}
 
 
 
-def register(function, wrapper):
+def register(function, wrapper, request_context=None):
     holder = FunctionHolder(function, wrapper)
     registered[holder.name] = holder
-    print 'registered'
+    if request_context is not None:
+        request_context.add_registered(holder)
