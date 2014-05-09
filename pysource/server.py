@@ -7,7 +7,9 @@ from pysource import env
 class RequestHandler(BaseRequestHandler):
 
     def handle(self):
-        pass
+        data = self.request.recv(1024)
+        response = "{}: {}".format('oh boy', data)
+        self.request.sendall(response)
 
 
 def run():
