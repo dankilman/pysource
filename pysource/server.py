@@ -10,7 +10,6 @@ from pysource import registry
 
 def _handle_source_register(payload):
     source_content = payload['source_content']
-
     exec source_content
     names = [reg.name for reg in request_context.registered]
     return {'names': names}
@@ -19,12 +18,8 @@ def _handle_source_register(payload):
 def _handle_run_function(payload):
     function_name = payload['name']
     args = payload['args']
-
     result = registry.run_function(function_name, args)
-
-    return {'the_name': function_name,
-            'the_args': args,
-            'the_result': result}
+    return {'result': result}
 
 
 def _handle(req_type, payload):
