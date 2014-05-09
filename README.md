@@ -13,7 +13,7 @@ pip install https://github.com/dankilman/pysource/archive/master.tar.gz
 ```
 
 The following should probably be placed in `.bashrc` or something similiar.
-The main entry points [`pysource` and `def`] are sourced in this shell script.
+The functions `pysource` and `def` are sourced in this shell script.
 ```bash
 source $(which pysource.sh)
 ```
