@@ -21,7 +21,7 @@ def source(source_path):
 
 
 def run(function_name, *args):
-    print client.run_function(function_name, args)
+    return client.run_function(function_name, args)
 
 
 def main():
