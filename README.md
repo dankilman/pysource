@@ -30,6 +30,7 @@ pysource daemon [start, stop, restart] [--force]
 ```
 
 If the daemon was not stopped in a clean manner, pass `--force` to either `start` or `restart`.
+If things are still not working after this try removing all the files in `~/.pysource` dir and try again.
 
 This logic should probably be managed by `systemd` or something similiar, but this is what I have for now.
 
