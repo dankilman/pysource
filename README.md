@@ -21,22 +21,22 @@ source $(which pysource.sh)
 Controlling the daemon
 ======================
 
-To start the deamon
+To start the daemon
 ```bash
 pysource daemon start
 ```
 
-To stop the deamon
+To stop the daemon
 ```bash
 pysource daemon stop
 ```
 
-To restart the deamon
+To restart the daemon
 ```bash
 pysource daemon restart
 ```
 
-If the deamon was not stopped in a clean manner, pass `--force` to either `start` or `restart`.
+If the daemon was not stopped in a clean manner, pass `--force` to either `start` or `restart`.
 
 This logic should probably be managed by `systemd` or something similiar, but this is what I have for now.
 
