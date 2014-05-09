@@ -13,7 +13,6 @@ class FunctionHolder(object):
 registered = {}
 
 
-
 def register(function, wrapper, request_context=None):
     holder = FunctionHolder(function, wrapper)
     registered[holder.name] = holder

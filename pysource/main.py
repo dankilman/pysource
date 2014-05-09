@@ -1,9 +1,8 @@
-import sys
-
 import argh
 
 from pysource import daemonizer
 from pysource import client
+
 
 def daemon(action):
     if action == 'start':

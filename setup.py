@@ -12,5 +12,5 @@ setup(
         'argh',
         'python-daemon'
     ],
-    entry_points = {}
+    entry_points={}
 )

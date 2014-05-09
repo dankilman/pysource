@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from pysource.arguments import ArgTypeSpec
 
+
 class ArgumentsTest(TestCase):
 
     def _assert_valid_parsing(self, fun, args, expected_parsed_args):

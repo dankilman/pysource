@@ -1,5 +1,4 @@
 import json
-import os
 from SocketServer import (ThreadingUnixStreamServer,
                           StreamRequestHandler)
 
@@ -36,6 +35,7 @@ class RequestHandler(StreamRequestHandler):
         res.write(res_body_len)
         res.write('\r\n')
         res.write(res_body)
+
 
 def run():
     server = ThreadingUnixStreamServer(env.unix_socket_path,
