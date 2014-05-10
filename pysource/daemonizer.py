@@ -63,6 +63,15 @@ def restart(force):
     start(force)
 
 
+def status():
+    stat = 'stopped'
+    pid = None
+    if _pidfile.is_locked():
+        pid = _read_pid()
+        stat = 'running' if _process_is_running(pid) else 'corrupted'
+    return stat, pid
+
+
 def _write_pid():
     with open(_pidfile.lock_file, 'w') as f:
         f.write(str(os.getpid()))
@@ -79,3 +88,12 @@ def _make_pysource_dir():
     except OSError, e:
         if e.errno != errno.EEXIST:
             raise
+
+
+def _process_is_running(pid):
+    try:
+        os.kill(pid, signal.SIG_DFL)
+    except OSError, e:
+        return e.errno != errno.ESRCH
+    else:
+        return True

@@ -32,9 +32,21 @@ def daemon(action, force=False):
             return 'Daemon not running'
     elif action == 'restart':
         daemonizer.restart(force)
+    elif action == 'status':
+        status, pid = daemonizer.status()
+        if status == 'stopped':
+            return 'Daemon is (probably) stopped'
+        elif status == 'corrupted':
+            return 'Daemon pidfile exists but process does not seem ' \
+                   'to be running (pid: {0}). You should probably clean ' \
+                   'the files in ~/.pysource and manually check if there is' \
+                   ' a daemon running somewhere'.format(pid)
+        else:
+            return 'Daemon is (probably) running (pid: {0})'.format(pid)
     else:
         raise argh.CommandError('unrecognized action: {0} '
-                                '[valid: start, stop, restart]'.format(action))
+                                '[valid: start, stop, restart, status]'
+                                .format(action))
 
 
 def list_registered():
