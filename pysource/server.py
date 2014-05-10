@@ -25,7 +25,7 @@ from pysource import registry
 
 def _handle_source_register(payload):
     source_content = payload['source_content']
-    exec source_content
+    exec source_content in globals()
     names = [reg.name for reg in request_context.registered]
     return {'names': names}
 
