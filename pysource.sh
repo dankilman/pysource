@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-__pysource_python=python
+export PYSOURCE_PYTHON=${PYSOURCE_PYTHON="$(command \which python)"}
 
 pysource()
 {
@@ -33,7 +33,7 @@ pysource()
 
 __pysource_main()
 {
-    ${__pysource_python} -m pysource.main $@
+    ${PYSOURCE_PYTHON} -m pysource.main $@
 }
 
 __pysource_source()
