@@ -31,7 +31,7 @@ def _create_shell_function(function_name, verbose=False):
         function_suffix = 'echo "{0} function sourced."'.format(function_name)
     return '''%(function_name)s()
 {
-    __pysource_run %(function_name)s "$@"
+    __pysource_main run %(function_name)s "$@"
 }
 %(function_suffix)s
 
