@@ -37,6 +37,14 @@ def daemon(action, force=False):
                                 '[valid: start, stop, restart]'.format(action))
 
 
+def list_registered():
+    return client.list_registered()
+
+
+def source_registered(verbose=False, *args):
+    return client.source_registered(verbose=verbose)
+
+
 def source(source_path, verbose=False):
     return client.source_register(source_path,
                                   verbose=verbose)
@@ -50,7 +58,9 @@ def main():
     argh.dispatch_commands([
         daemon,
         source,
-        run
+        run,
+        list_registered,
+        source_registered
     ], completion=False)
 
 

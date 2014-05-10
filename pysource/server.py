@@ -30,6 +30,11 @@ def _handle_source_register(payload):
     return {'names': names}
 
 
+def _handle_list_registered(_):
+    names = [reg.name for reg in registry.get_registered()]
+    return {'names': names}
+
+
 def _handle_run_function(payload):
     function_name = payload['name']
     args = payload['args']
@@ -43,6 +48,8 @@ def _handle(req_type, payload):
         handler = _handle_source_register
     elif req_type == protocol.RUN_FUNCTION_REQUEST:
         handler = _handle_run_function
+    elif req_type == protocol.LIST_REGISTERED:
+        handler = _handle_list_registered
     return handler(payload)
 
 

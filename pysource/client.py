@@ -45,6 +45,17 @@ def run_function(function_name, args):
     return result['result']
 
 
+def list_registered():
+    result = do_request(protocol.LIST_REGISTERED, {})
+    return 'Registered functions: {0}'.format(result['names'])
+
+
+def source_registered(verbose=False):
+    result = do_request(protocol.LIST_REGISTERED, {})
+    return shell.create_shell_functions(result['names'],
+                                        verbose=verbose)
+
+
 def do_request(req_type, payload):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.connect(unix_socket_path)

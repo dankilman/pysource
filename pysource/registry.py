@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import copy
+
 from pysource import arguments
 
 
@@ -43,3 +45,7 @@ def run_function(function_name, args):
     if function_name not in registered:
         raise RuntimeError('{0} not registered'.format(function_name))
     return registered[function_name].run(args)
+
+
+def get_registered():
+    return copy.copy(registered.values())

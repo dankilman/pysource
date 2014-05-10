@@ -19,8 +19,11 @@ __pysource_python=python
 pysource()
 {
     case "$1" in
-        daemon)
-            __pysource_daemon $@
+        daemon|list-registered)
+            __pysource_main $@
+            ;;
+        source-registered)
+            __pysource_source_registered $@
             ;;
         *)
             __pysource_source $@
@@ -28,14 +31,27 @@ pysource()
     esac
 }
 
-__pysource_daemon()
+__pysource_main()
 {
     ${__pysource_python} -m pysource.main $@
+}
+
+
+__pysource_source_registered()
+{
+    local output="$(${__pysource_python} -m pysource.main source-registered $@)"
+    __pysource_source_impl "$output"
 }
 
 __pysource_source()
 {
     local output="$(${__pysource_python} -m pysource.main source $@)"
+    __pysource_source_impl "$output"
+}
+
+__pysource_source_impl()
+{
+    local output="$1"
     if [[ $output == \#GENERATED_BY_PYSOURCE* ]]
     then
         if [[ $output == \#GENERATED_BY_PYSOURCE_VERBOSE* ]]
