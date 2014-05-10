@@ -38,11 +38,19 @@ def daemon(action, force=False):
 
 
 def list_registered():
-    return client.list_registered()
+    names = client.list_registered()
+    yield 'Registered functions:'
+    for name in names:
+        yield name
 
 
-def source_registered(verbose=False, *args):
+def source_registered(verbose=False):
     return client.source_registered(verbose=verbose)
+
+
+def source_named(function_name, verbose=False):
+    return client.source_named(function_name,
+                               verbose=verbose)
 
 
 def source(source_path, verbose=False):
@@ -60,7 +68,8 @@ def main():
         source,
         run,
         list_registered,
-        source_registered
+        source_registered,
+        source_named
     ], completion=False)
 
 

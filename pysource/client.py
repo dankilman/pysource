@@ -47,12 +47,16 @@ def run_function(function_name, args):
 
 def list_registered():
     result = do_request(protocol.LIST_REGISTERED, {})
-    return 'Registered functions: {0}'.format(result['names'])
+    return result['names']
 
 
 def source_registered(verbose=False):
-    result = do_request(protocol.LIST_REGISTERED, {})
-    return shell.create_shell_functions(result['names'],
+    return shell.create_shell_functions(list_registered(),
+                                        verbose=verbose)
+
+
+def source_named(function_name, verbose=False):
+    return shell.create_shell_functions([function_name],
                                         verbose=verbose)
 
 
