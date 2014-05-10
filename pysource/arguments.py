@@ -27,19 +27,19 @@ class ArgTypeSpec(object):
             prefix = [str for _ in range(args_len - len(defaults))]
             defaults = prefix + list(defaults)
         self.types = defaults
+        self.len_types = len(self.types)
         self.has_varargs = spec.varargs is not None
 
     def parse(self, args):
         len_args = len(args)
-        len_types = len(self.types)
-        if not self.has_varargs and len_args != len_types:
+        if not self.has_varargs and len_args != self.len_types:
             raise RuntimeError(
                 '{0}() takes exactly {1} arguments ({2} given)'
-                .format(self.function_name, len_types, len_args))
-        if self.has_varargs and len_args < len_types:
+                .format(self.function_name, self.len_types, len_args))
+        if self.has_varargs and len_args < self.len_types:
             raise RuntimeError(
                 '{0}() takes at least {1} arguments ({2} given)'
-                .format(self.function_name, len_types, len_args))
+                .format(self.function_name, self.len_types, len_args))
         parsed_args = [tpe(arg) for (tpe, arg) in zip(self.types, args)]
-        varargs = args[len_types:]
+        varargs = args[self.len_types:]
         return parsed_args + varargs
