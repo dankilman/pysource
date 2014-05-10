@@ -23,16 +23,17 @@ from pysource import shell
 from pysource import ExecutionError
 
 
-def source_register(source_path):
+def source_register(source_path, verbose=False):
     if not os.path.exists(source_path):
-        raise ExecutionError('{0} cannot be loaded'.format(source_path))
+        raise ExecutionError('{0} does not exist'.format(source_path))
     with open(source_path, 'r') as f:
         source_content = f.read()
     result = do_request(
         protocol.SOURCE_REGISTER_REQUEST, {
             'source_content': source_content
         })
-    return shell.create_shell_functions(result['names'])
+    return shell.create_shell_functions(result['names'],
+                                        verbose=verbose)
 
 
 def run_function(function_name, args):

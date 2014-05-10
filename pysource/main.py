@@ -37,8 +37,9 @@ def daemon(action, force=False):
                                 '[valid: start, stop, restart]'.format(action))
 
 
-def source(source_path):
-    return client.source_register(source_path)
+def source(source_path, verbose=False):
+    return client.source_register(source_path,
+                                  verbose=verbose)
 
 
 def run(function_name, *args):

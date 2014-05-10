@@ -13,15 +13,27 @@
 # limitations under the License.
 
 
-def create_shell_functions(function_names):
-    return ''.join([_create_shell_function(name)
-                   for name in function_names])
+VALID_MARKER = """#GENERATED_BY_PYSOURCE{0}
+"""
 
 
-def _create_shell_function(function_name):
+def create_shell_functions(function_names, verbose=False):
+    functions = ''.join([_create_shell_function(name, verbose)
+                         for name in function_names])
+    verbose_marker = '_VERBOSE' if verbose else ''
+    prefix = VALID_MARKER.format(verbose_marker)
+    return ''.join([prefix, functions])
+
+
+def _create_shell_function(function_name, verbose=False):
+    function_suffix = ''
+    if verbose:
+        function_suffix = 'echo "{0} function sourced."'.format(function_name)
     return '''%(function_name)s()
 {
     __pysource_run %(function_name)s "$@"
 }
+%(function_suffix)s
 
-''' % dict(function_name=function_name)
+''' % dict(function_name=function_name,
+           function_suffix=function_suffix)

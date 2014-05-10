@@ -35,7 +35,18 @@ __pysource_daemon()
 
 __pysource_source()
 {
-    eval "$(${__pysource_python} -m pysource.main source $@)"
+    local output="$(${__pysource_python} -m pysource.main source $@)"
+    if [[ $output == \#GENERATED_BY_PYSOURCE* ]]
+    then
+        if [[ $output == \#GENERATED_BY_PYSOURCE_VERBOSE* ]]
+        then
+            echo "Sourcing:"
+            echo "$output"
+        fi
+        eval "$output"
+    else
+        echo "$output"
+    fi
 }
 
 __pysource_run()
