@@ -74,11 +74,16 @@ def run(function_name, *args):
     return client.run_function(function_name, args)
 
 
+def run_piped(function_name, *args):
+    return client.run_piped_function(function_name, args)
+
+
 def main():
     argh.dispatch_commands([
         daemon,
         source,
         run,
+        run_piped,
         list_registered,
         source_registered,
         source_named

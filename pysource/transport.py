@@ -73,6 +73,10 @@ def do_client_request(req_type, payload):
         sock.close()
 
 
+def do_piped_client_request(req_type, payload):
+    pass
+
+
 def _read_body(sock):
     json_body_len = int(sock.readline())
     return json.loads(sock.read(json_body_len))

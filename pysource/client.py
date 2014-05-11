@@ -35,6 +35,11 @@ def run_function(function_name, args):
     return result['result']
 
 
+def run_piped_function(function_name, args):
+    result = handlers.run_function.piped_remote(name=function_name, args=args)
+    return result['result']
+
+
 def list_registered():
     result = handlers.list_registered.remote()
     return result['names']

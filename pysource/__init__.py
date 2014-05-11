@@ -35,6 +35,13 @@ def remote_call(func):
         from pysource.transport import do_client_request
         return do_client_request(request_type, kwargs)
     wrapper.remote = remote
+
+    def piped_remote(**kwargs):
+        # import here to avoid cyclic dependencies
+        from pysource.transport import do_piped_client_request
+        return do_piped_client_request(request_type, kwargs)
+    wrapper.piped_remote = piped_remote
+
     return wrapper
 
 
@@ -49,12 +56,17 @@ class RequestContext(threading.local):
 request_context = RequestContext()
 
 
-def function(func, *args, **kwargs):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-    registry.register(func, wrapper, request_context)
-    return wrapper
+def function(func=None, piped=False):
+    if func is not None:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+        registry.register(func, wrapper, request_context, piped)
+        return wrapper
+    else:
+        def partial_wrapper(fn):
+            return function(fn, piped=piped)
+        return partial_wrapper
 
 
 class ExecutionError(argh.CommandError):

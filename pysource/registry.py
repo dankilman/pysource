@@ -20,11 +20,12 @@ from pysource import arguments
 
 class FunctionHolder(object):
 
-    def __init__(self, function, wrapper):
+    def __init__(self, function, wrapper, piped):
         self.function = function
         self.wrapper = wrapper
-        self.type_spec = arguments.ArgTypeSpec(function)
+        self.type_spec = arguments.ArgTypeSpec(function, piped)
         self.name = function.__name__
+        self.piped = piped
 
     def run(self, args):
         parsed_args = self.type_spec.parse(args)
@@ -34,11 +35,10 @@ class FunctionHolder(object):
 registered = {}
 
 
-def register(function, wrapper, request_context=None):
-    holder = FunctionHolder(function, wrapper)
+def register(function, wrapper, request_context, piped):
+    holder = FunctionHolder(function, wrapper, piped)
     registered[holder.name] = holder
-    if request_context is not None:
-        request_context.add_registered(holder)
+    request_context.add_registered(holder)
 
 
 def run_function(function_name, args):

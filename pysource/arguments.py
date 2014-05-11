@@ -18,7 +18,7 @@ from argh.utils import get_arg_spec
 
 class ArgTypeSpec(object):
 
-    def __init__(self, function):
+    def __init__(self, function, piped):
         self.function_name = function.__name__
         spec = get_arg_spec(function)
         args_len = len(spec.args)
@@ -29,6 +29,7 @@ class ArgTypeSpec(object):
         self.types = defaults
         self.len_types = len(self.types)
         self.has_varargs = spec.varargs is not None
+        self.piped = piped
 
     def parse(self, args):
         len_args = len(args)
