@@ -37,11 +37,8 @@ def _handle(req_type, payload):
 class RequestHandler(StreamRequestHandler):
 
     def handle(self):
-        req = self.rfile
-        res = self.wfile
         try:
-            req_body_len = int(req.readline())
-            req_body = json.loads(req.read(req_body_len))
+            req_body = _read_body(self.rfile)
             req_type = req_body['type']
             req_payload = req_body['payload']
             res_payload = _handle(req_type, req_payload)
@@ -51,14 +48,10 @@ class RequestHandler(StreamRequestHandler):
             res_payload = {
                 'error': str(e)
             }
-        res_body = json.dumps({
+        _write_body(self.wfile, {
             'payload': res_payload,
             'status': res_status
         })
-        res_body_len = len(res_body)
-        res.write(res_body_len)
-        res.write('\r\n')
-        res.write(res_body)
 
 
 def do_client_request(req_type, payload):
@@ -67,17 +60,11 @@ def do_client_request(req_type, payload):
     req = sock.makefile('wb', 0)
     res = sock.makefile('rb', -1)
     try:
-        req_body = json.dumps({
+        _write_body(req, {
             'type': req_type,
             'payload': payload
         })
-        req_body_len = len(req_body)
-        req.write(req_body_len)
-        req.write('\r\n')
-        req.write(req_body)
-
-        res_body_len = int(res.readline())
-        res_body = json.loads(res.read(res_body_len))
+        res_body = _read_body(res)
         res_body_payload = res_body['payload']
         if res_body['status'] == RESPONSE_STATUS_ERROR:
             error = res_body_payload['error']
@@ -87,6 +74,19 @@ def do_client_request(req_type, payload):
         req.close()
         res.close()
         sock.close()
+
+
+def _read_body(sock):
+    json_body_len = int(sock.readline())
+    return json.loads(sock.read(json_body_len))
+
+
+def _write_body(sock, body):
+    json_body = json.dumps(body)
+    json_body_len = len(json_body)
+    sock.write(json_body_len)
+    sock.write('\r\n')
+    sock.write(json_body)
 
 
 def start_server():
