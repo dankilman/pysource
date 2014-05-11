@@ -15,7 +15,7 @@ When (and if) this package will be not as half-baked as it is now, I will probab
 pip install https://github.com/dankilman/pysource/archive/master.tar.gz
 ```
 
-The following should probably be placed in `.bashrc` or something similiar.
+The following should probably be placed in `.bashrc` or something similar.
 The functions `pysource` and `def` are sourced in this shell script.
 ```bash
 source $(which pysource.sh)
@@ -24,15 +24,16 @@ source $(which pysource.sh)
 Controlling the daemon
 ---
 
-To start/stop/restart the daemon
+To start/stop/restart/status the daemon
 ```bash
-pysource daemon [start, stop, restart] [--force]
+pysource daemon [start, stop, restart, status]
 ```
 
-If the daemon was not stopped in a clean manner, pass `--force` to either `start` or `restart`.
-If things are still not working after this try removing all the files in `~/.pysource` dir and try again.
+If the daemon was not stopped in a clean manner `start` will do its best, but this might still
+be shaky. So you are advised to also remove all the files in `~/.pysource` manually check that
+there isn't any pysource daemon process lurking somewhere and try again.
 
-This logic should probably be managed by `systemd` or something similiar, but this is what I have for now.
+This logic should probably be managed by `systemd` or something similar, but this is what I have for now.
 
 
 Usage
