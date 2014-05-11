@@ -23,7 +23,7 @@ class FunctionHolder(object):
     def __init__(self, function, wrapper, piped):
         self.function = function
         self.wrapper = wrapper
-        self.type_spec = arguments.ArgTypeSpec(function, piped)
+        self.type_spec = arguments.ArgTypeSpec(function)
         self.name = function.__name__
         self.piped = piped
 
