@@ -38,16 +38,11 @@ class RequestHandler(StreamRequestHandler):
 
     def handle(self):
         try:
-            req_body = _read_body(self.rfile)
-            req_type = req_body['type']
-            req_payload = req_body['payload']
-            res_payload = _handle(req_type, req_payload)
             res_status = RESPONSE_STATUS_OK
+            res_payload = _handle(**_read_body(self.rfile))
         except Exception, e:
             res_status = RESPONSE_STATUS_ERROR
-            res_payload = {
-                'error': str(e)
-            }
+            res_payload = {'error': str(e)}
         _write_body(self.wfile, {
             'payload': res_payload,
             'status': res_status
@@ -61,7 +56,7 @@ def do_client_request(req_type, payload):
     res = sock.makefile('rb', -1)
     try:
         _write_body(req, {
-            'type': req_type,
+            'req_type': req_type,
             'payload': payload
         })
         res_body = _read_body(res)
