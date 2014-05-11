@@ -15,7 +15,6 @@
 
 import functools
 import threading
-import uuid
 import argh
 
 from pysource import registry
