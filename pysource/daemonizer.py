@@ -22,7 +22,7 @@ import time
 import daemon
 import lockfile
 
-from pysource import env, server
+from pysource import env, transport
 
 _pidfile_dir = env.pysource_dir
 _pidfile_path = os.path.join(_pidfile_dir, 'pidfile')
@@ -45,7 +45,7 @@ def start(force):
         return False
     with _context:
         _write_pid()
-        server.run()
+        transport.start_server()
 
 
 def stop():

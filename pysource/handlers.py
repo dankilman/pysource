@@ -13,9 +13,25 @@
 # limitations under the License.
 
 
-SOURCE_REGISTER_REQUEST = "source_register_request"
-RUN_FUNCTION_REQUEST = "run_function_request"
-LIST_REGISTERED = "list_registered"
+from pysource import request_context
+from pysource import registry
+from pysource import remote_call
 
-RESPONSE_STATUS_OK = "ok"
-RESPONSE_STATUS_ERROR = "error"
+
+@remote_call
+def source_register(source_content):
+    exec(source_content, globals())
+    names = [reg.name for reg in request_context.registered]
+    return {'names': names}
+
+
+@remote_call
+def list_registered():
+    names = [reg.name for reg in registry.get_registered()]
+    return {'names': names}
+
+
+@remote_call
+def run_function(name, args):
+    result = registry.run_function(name, args)
+    return {'result': result}

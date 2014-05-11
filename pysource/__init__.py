@@ -20,6 +20,24 @@ import argh
 
 from pysource import registry
 
+remote_call_handlers = {}
+
+
+def remote_call(func):
+    request_type = func.__name__
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    remote_call_handlers[request_type] = wrapper
+
+    def remote(**kwargs):
+        # import here to avoid cyclic dependencies
+        from pysource.transport import do_client_request
+        return do_client_request(request_type, kwargs)
+    wrapper.remote = remote
+    return wrapper
+
 
 class RequestContext(threading.local):
 
