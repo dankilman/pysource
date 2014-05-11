@@ -19,9 +19,9 @@ from pysource import daemonizer
 from pysource import client
 
 
-def daemon(action, force=False):
+def daemon(action):
     if action == 'start':
-        started = daemonizer.start(force)
+        started = daemonizer.start()
         if not started:
             return 'Daemon already started'
     elif action == 'stop':
@@ -31,12 +31,12 @@ def daemon(action, force=False):
         else:
             return 'Daemon not running'
     elif action == 'restart':
-        daemonizer.restart(force)
+        daemonizer.restart()
     elif action == 'status':
         status, pid = daemonizer.status()
-        if status == 'stopped':
+        if status == daemonizer.STATUS_STOPPED:
             return 'Daemon is (probably) stopped'
-        elif status == 'corrupted':
+        elif status == daemonizer.STATUS_CORRUPTED:
             return 'Daemon pidfile exists but process does not seem ' \
                    'to be running (pid: {0}). You should probably clean ' \
                    'the files in ~/.pysource and manually check if there is' \

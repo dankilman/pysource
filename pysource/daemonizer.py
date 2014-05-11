@@ -24,6 +24,10 @@ import lockfile
 
 from pysource import env, transport
 
+STATUS_STOPPED = 'stopped'
+STATUS_RUNNING = 'running'
+STATUS_CORRUPTED = 'corrupted'
+
 _pidfile_dir = env.pysource_dir
 _pidfile_path = os.path.join(_pidfile_dir, 'pidfile')
 _pidfile = lockfile.FileLock(_pidfile_path)
@@ -35,40 +39,42 @@ _context = daemon.DaemonContext(
 )
 
 
-def start(force):
+def start():
     _make_pysource_dir()
-    if force:
+    stat, _ = status()
+    if stat == STATUS_CORRUPTED:
         _pidfile.break_lock()
-        if os.path.exists(env.unix_socket_path):
-            os.remove(env.unix_socket_path)
-    elif _pidfile.is_locked():
+        transport.cleanup()
+    elif stat == STATUS_RUNNING:
         return False
     with _context:
         _write_pid()
         transport.start_server()
 
 
-def stop():
-    if not _pidfile.is_locked():
+def stop(stat=None):
+    stat = stat or status()[0]
+    if stat != STATUS_RUNNING:
         return False
     os.kill(_read_pid(), signal.SIGTERM)
-    os.remove(env.unix_socket_path)
+    transport.cleanup()
     return True
 
 
-def restart(force):
-    if _pidfile.is_locked() and not force:
-        stop()
+def restart():
+    stat, _ = status()
+    if stat == STATUS_RUNNING:
+        stop(stat)
         time.sleep(1)
-    start(force)
+    start()
 
 
 def status():
-    stat = 'stopped'
+    stat = STATUS_STOPPED
     pid = None
     if _pidfile.is_locked():
         pid = _read_pid()
-        stat = 'running' if _process_is_running(pid) else 'corrupted'
+        stat = STATUS_RUNNING if _process_is_running(pid) else STATUS_CORRUPTED
     return stat, pid
 
 

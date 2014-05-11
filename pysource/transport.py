@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import os
 import json
 import socket
 from SocketServer import (ThreadingUnixStreamServer,
@@ -25,6 +25,8 @@ from pysource import remote_call_handlers
 
 RESPONSE_STATUS_OK = "ok"
 RESPONSE_STATUS_ERROR = "error"
+
+unix_socket_path = os.path.join(env.pysource_dir, 'socket')
 
 
 def _handle(req_type, payload):
@@ -51,7 +53,7 @@ class RequestHandler(StreamRequestHandler):
 
 def do_client_request(req_type, payload):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.connect(env.unix_socket_path)
+    sock.connect(unix_socket_path)
     req = sock.makefile('wb', 0)
     res = sock.makefile('rb', -1)
     try:
@@ -85,6 +87,12 @@ def _write_body(sock, body):
 
 
 def start_server():
-    server = ThreadingUnixStreamServer(env.unix_socket_path,
+    server = ThreadingUnixStreamServer(unix_socket_path,
                                        RequestHandler)
     server.serve_forever()
+
+
+def cleanup():
+    """Used for forced cleanup"""
+    if os.path.exists(unix_socket_path):
+        os.remove(unix_socket_path)
