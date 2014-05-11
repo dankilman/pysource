@@ -20,20 +20,20 @@ pysource()
 {
     case "$1" in
         daemon|list-registered|run)
-            __pysource_main $@
+            __pysource_main "$@"
             ;;
         source|source-registered|source-named)
-            __pysource_source $@
+            __pysource_source "$@"
             ;;
         *)
-            __pysource_source source $@
+            __pysource_source source "$@"
             ;;
     esac
 }
 
 __pysource_main()
 {
-    ${PYSOURCE_PYTHON} -m pysource.main $@
+    ${PYSOURCE_PYTHON} -m pysource.main "$@"
 }
 
 __pysource_source()
