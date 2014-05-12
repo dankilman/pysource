@@ -16,7 +16,6 @@
 import os
 import json
 import socket
-import select
 import shutil
 from SocketServer import (ThreadingUnixStreamServer,
                           StreamRequestHandler)
@@ -58,7 +57,7 @@ class RequestHandler(StreamRequestHandler):
 
 
 def do_regular_client_request(req_type, payload):
-    _do_client_request(req_type, payload)
+    return _do_client_request(req_type, payload)
 
 
 def do_piped_client_request(req_type, payload, stdin, stdout):
@@ -66,7 +65,7 @@ def do_piped_client_request(req_type, payload, stdin, stdout):
         #  stdin is the easy part
         shutil.copyfileobj(stdin, req)
 
-    _do_client_request(req_type, payload, pipe_handler)
+    return _do_client_request(req_type, payload, pipe_handler)
 
 
 def _do_client_request(req_type, payload, pipe_handler=None):

@@ -17,8 +17,6 @@ import functools
 import threading
 import argh
 
-from pysource import registry
-
 remote_call_handlers = {}
 
 
@@ -60,6 +58,8 @@ request_context = RequestContext()
 
 
 def function(func=None, piped=False):
+    # import here to avoid cyclic dependencies
+    from pysource import registry
     if func is not None:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):

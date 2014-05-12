@@ -30,7 +30,13 @@ class FunctionHolder(object):
 
     def run(self, args):
         parsed_args = self.type_spec.parse(args)
-        return self.wrapper(*parsed_args)
+        streams = {}
+        if self.piped:
+            streams = {
+                '_in': request_context.req_in,
+                '_out': request_context.req_out
+            }
+        return self.wrapper(*parsed_args, **streams)
 
     def to_dict(self):
         return {
