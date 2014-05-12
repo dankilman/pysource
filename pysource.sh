@@ -19,7 +19,7 @@ export PYSOURCE_PYTHON=${PYSOURCE_PYTHON="$(command \which python)"}
 pysource()
 {
     case "$1" in
-        daemon|list-registered|run)
+        daemon|list-registered|run|piped-run)
             __pysource_main "$@"
             ;;
         source|source-registered|source-named)

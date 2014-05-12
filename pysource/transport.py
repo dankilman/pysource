@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import os
 import json
 import socket
+import select
+import shutil
 from SocketServer import (ThreadingUnixStreamServer,
                           StreamRequestHandler)
 
 from pysource import env
 from pysource import ExecutionError
 from pysource import remote_call_handlers
+from pysource import request_context
 
 
 RESPONSE_STATUS_OK = "ok"
@@ -39,6 +43,8 @@ def _handle(req_type, payload):
 class RequestHandler(StreamRequestHandler):
 
     def handle(self):
+        request_context.req_in = self.rfile
+        request_context.res_out = self.wfile
         try:
             res_status = RESPONSE_STATUS_OK
             res_payload = _handle(**_read_body(self.rfile))
@@ -51,7 +57,19 @@ class RequestHandler(StreamRequestHandler):
         })
 
 
-def do_client_request(req_type, payload):
+def do_regular_client_request(req_type, payload):
+    _do_client_request(req_type, payload)
+
+
+def do_piped_client_request(req_type, payload, stdin, stdout):
+    def pipe_handler(req, res):
+        #  stdin is the easy part
+        shutil.copyfileobj(stdin, req)
+
+    _do_client_request(req_type, payload, pipe_handler)
+
+
+def _do_client_request(req_type, payload, pipe_handler=None):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     sock.connect(unix_socket_path)
     req = sock.makefile('wb', 0)
@@ -61,6 +79,8 @@ def do_client_request(req_type, payload):
             'req_type': req_type,
             'payload': payload
         })
+        if pipe_handler is not None:
+            pipe_handler(req, res)
         res_body = _read_body(res)
         res_body_payload = res_body['payload']
         if res_body['status'] == RESPONSE_STATUS_ERROR:
@@ -71,10 +91,6 @@ def do_client_request(req_type, payload):
         req.close()
         res.close()
         sock.close()
-
-
-def do_piped_client_request(req_type, payload):
-    pass
 
 
 def _read_body(sock):

@@ -16,6 +16,7 @@
 import copy
 
 from pysource import arguments
+from pysource import request_context
 
 
 class FunctionHolder(object):
@@ -31,20 +32,32 @@ class FunctionHolder(object):
         parsed_args = self.type_spec.parse(args)
         return self.wrapper(*parsed_args)
 
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'piped': self.piped
+        }
 
 registered = {}
 
 
-def register(function, wrapper, request_context, piped):
+def register(function, wrapper, piped):
     holder = FunctionHolder(function, wrapper, piped)
     registered[holder.name] = holder
     request_context.add_registered(holder)
 
 
-def run_function(function_name, args):
+def run_function(function_name, args, piped):
     if function_name not in registered:
         raise RuntimeError('{0} not registered'.format(function_name))
-    return registered[function_name].run(args)
+    holder = registered[function_name]
+    if holder.piped and not piped:
+        raise RuntimeError('{0} is a piped function but was called as a '
+                           'regular function'.format(function_name))
+    if not holder.piped and piped:
+        raise RuntimeError('{0} is a regular function but was called as a '
+                           'piped function'.format(function_name))
+    return holder.run(args)
 
 
 def get_registered():

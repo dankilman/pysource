@@ -21,17 +21,23 @@ from pysource import remote_call
 @remote_call
 def source_register(source_content):
     exec(source_content, globals())
-    names = [reg.name for reg in request_context.registered]
-    return {'names': names}
+    descriptors = [reg.to_dict() for reg in request_context.registered]
+    return {'descriptors': descriptors}
 
 
 @remote_call
 def list_registered():
-    names = [reg.name for reg in registry.get_registered()]
-    return {'names': names}
+    descriptors = [reg.to_dict() for reg in registry.get_registered()]
+    return {'descriptors': descriptors}
 
 
 @remote_call
 def run_function(name, args):
-    result = registry.run_function(name, args)
+    result = registry.run_function(name, args, piped=False)
+    return {'result': result}
+
+
+@remote_call
+def run_piped_function(name, args):
+    result = registry.run_function(name, args, piped=True)
     return {'result': result}

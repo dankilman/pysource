@@ -50,10 +50,16 @@ def daemon(action):
 
 
 def list_registered():
-    names = client.list_registered()
-    yield 'Registered functions:'
-    for name in names:
-        yield name
+    descriptors = client.list_registered()
+    if len(descriptors) == 0:
+        yield 'No functions registered'
+    else:
+        yield 'Registered functions:'
+        for descriptor in descriptors:
+            name = descriptor['name']
+            piped = descriptor['piped']
+            suffix = ' (piped)' if piped else ''
+            yield '{}{}'.format(name, suffix)
 
 
 def source_registered(verbose=False):

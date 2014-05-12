@@ -26,7 +26,7 @@ def source_register(source_path, verbose=False):
     with open(source_path, 'r') as f:
         source_content = f.read()
     result = handlers.source_register.remote(source_content=source_content)
-    return shell.create_shell_functions(result['names'],
+    return shell.create_shell_functions(result['descriptors'],
                                         verbose=verbose)
 
 
@@ -36,13 +36,14 @@ def run_function(function_name, args):
 
 
 def run_piped_function(function_name, args):
-    result = handlers.run_function.piped_remote(name=function_name, args=args)
+    result = handlers.run_piped_function.piped_remote(
+        name=function_name, args=args)
     return result['result']
 
 
 def list_registered():
     result = handlers.list_registered.remote()
-    return result['names']
+    return result['descriptors']
 
 
 def source_registered(verbose=False):
@@ -50,6 +51,7 @@ def source_registered(verbose=False):
                                         verbose=verbose)
 
 
-def source_named(function_name, verbose=False):
-    return shell.create_shell_functions([function_name],
+def source_named(function_name, piped=False, verbose=False):
+    descriptor = {'name': function_name, 'piped': piped}
+    return shell.create_shell_functions([descriptor],
                                         verbose=verbose)

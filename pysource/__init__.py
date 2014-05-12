@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import sys
 import functools
 import threading
 import argh
@@ -32,14 +32,15 @@ def remote_call(func):
 
     def remote(**kwargs):
         # import here to avoid cyclic dependencies
-        from pysource.transport import do_client_request
-        return do_client_request(request_type, kwargs)
+        from pysource.transport import do_regular_client_request
+        return do_regular_client_request(request_type, kwargs)
     wrapper.remote = remote
 
     def piped_remote(**kwargs):
         # import here to avoid cyclic dependencies
         from pysource.transport import do_piped_client_request
-        return do_piped_client_request(request_type, kwargs)
+        return do_piped_client_request(request_type, kwargs,
+                                       sys.stdin, sys.stdout)
     wrapper.piped_remote = piped_remote
 
     return wrapper
@@ -50,6 +51,8 @@ class RequestContext(threading.local):
     def __init__(self):
         super(RequestContext, self).__init__(self)
         self.registered = []
+        self.req_in = None
+        self.res_out = None
 
     def add_registered(self, function_holder):
         self.registered.append(function_holder)
@@ -61,7 +64,7 @@ def function(func=None, piped=False):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
-        registry.register(func, wrapper, request_context, piped)
+        registry.register(func, wrapper, piped)
         return wrapper
     else:
         def partial_wrapper(fn):
