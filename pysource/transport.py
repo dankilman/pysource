@@ -13,12 +13,17 @@
 # limitations under the License.
 
 
+import time
+import uuid
+import select
 import os
 import json
 import socket
 import shutil
+import errno
 from SocketServer import (ThreadingUnixStreamServer,
                           StreamRequestHandler)
+from io import BytesIO
 
 from pysource import env
 from pysource import ExecutionError
@@ -32,7 +37,7 @@ RESPONSE_STATUS_ERROR = "error"
 unix_socket_path = os.path.join(env.pysource_dir, 'socket')
 
 
-def _handle(req_type, payload):
+def _handle(req_type, payload, **kwargs):
     handler = remote_call_handlers.get(req_type)
     if handler is None:
         raise RuntimeError('Unknown request type: {0}'.format(req_type))
@@ -42,11 +47,13 @@ def _handle(req_type, payload):
 class RequestHandler(StreamRequestHandler):
 
     def handle(self):
-        request_context.req_in = self.rfile
-        request_context.res_out = self.wfile
         try:
             res_status = RESPONSE_STATUS_OK
-            res_payload = _handle(**_read_body(self.rfile))
+            body = _read_body(self.rfile)
+            if body['piped'] is True:
+                res_payload = self._handle_piped(body)
+            else:
+                res_payload = _handle(**body)
         except Exception, e:
             res_status = RESPONSE_STATUS_ERROR
             res_payload = {'error': str(e)}
@@ -55,16 +62,198 @@ class RequestHandler(StreamRequestHandler):
             'status': res_status
         })
 
+    def _handle_piped(self, body):
+        uid = body['uid']
+        self.connection.setblocking(0)
+        try:
+            pipe_control_handler = PipeControlSocketHandler(uid)
+            pipe_control_handler.accept()
+            piped_input = PipeControlledInputSocket(
+                self.rfile,
+                self.connection,
+                pipe_control_handler.rfile,
+                pipe_control_handler.conn)
+            piped_output = PipeControlledOutputSocket(
+                self.wfile,
+                self.connection,
+                pipe_control_handler.wfile,
+                pipe_control_handler.conn)
+            request_context.req_in = piped_input
+            request_context.res_out = piped_output
+            res_payload = _handle(**body)
+            piped_input.close()
+            piped_output.close()
+            pipe_control_handler.close()
+            return res_payload
+        finally:
+            self.connection.setblocking(1)
+
+
+class PipeControlSocketHandler(object):
+
+    def __init__(self, uid):
+        self.uid = uid
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.unix_socket_path = os.path.join(env.pysource_dir, self.uid)
+        self.conn = None
+        self.wfile = None
+        self.rfile = None
+        self.server = True
+
+    def accept(self):
+        self.sock.bind(self.unix_socket_path)
+        self.sock.listen(1)
+        conn, addr = self.sock.accept()
+        self._setup(conn)
+
+    def connect(self):
+        self.server = False
+        retries = 3
+        current_tries = 0
+        while True:
+            try:
+                current_tries += 1
+                self.sock.connect(self.unix_socket_path)
+                break
+            except socket.error, e:
+                if e.errno == errno.ENOENT and current_tries < retries:
+                    time.sleep(0.1)
+                else:
+                    raise
+
+        self._setup(self.sock)
+
+    def _setup(self, conn):
+        self.conn = conn
+        self.conn.setblocking(0)
+        self.rfile = self.conn.makefile('rb', -1)
+        self.wfile = self.conn.makefile('wb', 0)
+
+    def close(self):
+        if not self.wfile.closed:
+            try:
+                self.conn.setblocking(1)
+                self.wfile.flush()
+            except socket.error:
+                pass
+        self.wfile.close()
+        self.rfile.close()
+        if self.server:
+            try:
+                self.conn.shutdown(socket.SHUT_WR)
+            except socket.error:
+                pass
+            try:
+                self.sock.close()
+            except socket.error:
+                pass
+        self.conn.close()
+        if self.server and os.path.exists(self.unix_socket_path):
+            os.remove(self.unix_socket_path)
+
+
+class PipeControlledBaseSocket(object):
+
+    def __init__(self, data_file, data_socket, control_file, control_socket):
+        self.closed = False
+        self.data_file = data_file
+        self.data_socket = data_socket
+        self.control_file = control_file
+        self.control_socket = control_socket
+        self.sockets = [data_socket, control_socket]
+
+
+class PipeControlledInputSocket(PipeControlledBaseSocket):
+
+    def __init__(self, data_file, data_socket, control_file, control_socket):
+        super(PipeControlledInputSocket, self).__init__(data_file,
+                                                        data_socket,
+                                                        control_file,
+                                                        control_socket)
+        self.bytes_read = 0
+        self.total_bytes = None
+        self.done = False
+
+    def read(self, length=0):
+        if self.done:
+            return None
+        result = BytesIO()
+        while True:
+            if self.bytes_read == self.total_bytes:
+                break
+            readable, _, _ = select.select(self.sockets, [], [], 0.5)
+            if self.control_socket in readable:
+                self.total_bytes = int(self.control_file.readline())
+            if self.data_socket in readable:
+                to_read = 0 if length <= 0 else length - result.tell()
+                result.write(self.data_file.read(to_read))
+                if 0 < length == result.tell():
+                    break
+        if self.bytes_read == self.total_bytes:
+            self.done = True
+        return result.getvalue()
+
+    def close(self):
+        pass
+
+
+class PipeControlledOutputSocket(PipeControlledBaseSocket):
+
+    def __init__(self, data_file, data_socket, control_file, control_socket):
+        super(PipeControlledOutputSocket, self).__init__(data_file,
+                                                         data_socket,
+                                                         control_file,
+                                                         control_socket)
+        self.bytes_written = 0
+
+    def write(self, data):
+        view = memoryview(data)
+        total_bytes_to_write = len(view)
+        remaining_to_write = total_bytes_to_write
+        while True:
+            if remaining_to_write == 0:
+                break
+            _, writable, _ = select.select([], [self.data_socket], [], 0.5)
+            if self.data_socket in writable:
+                sent = self.data_socket.send(view[remaining_to_write:])
+                remaining_to_write -= sent
+        self.bytes_written += total_bytes_to_write
+
+    def close(self):
+        self.control_socket.setblocking(1)
+        self.control_file.write(len(self.bytes_written))
+        self.control_file.write('\r\n')
+        self.control_file.flush()
+
 
 def do_regular_client_request(req_type, payload):
     return _do_client_request(req_type, payload)
 
 
 def do_piped_client_request(req_type, payload, stdin, stdout):
-    def pipe_handler(req, res):
-        #  stdin is the easy part
-        shutil.copyfileobj(stdin, req)
-
+    def pipe_handler(sock, req, res, uid):
+        sock.setblocking(0)
+        try:
+            pipe_control_handler = PipeControlSocketHandler(uid)
+            pipe_control_handler.connect()
+            piped_output = PipeControlledOutputSocket(
+                req,
+                sock,
+                pipe_control_handler.wfile,
+                pipe_control_handler.conn)
+            if _has_read_data(stdin):
+                shutil.copyfileobj(stdin, piped_output)
+            piped_output.close()
+            piped_input = PipeControlledInputSocket(
+                res,
+                sock,
+                pipe_control_handler.rfile,
+                pipe_control_handler.conn)
+            shutil.copyfileobj(piped_input, stdout)
+            piped_input.close()
+            pipe_control_handler.close()
+        finally:
+            sock.setblocking(1)
     return _do_client_request(req_type, payload, pipe_handler)
 
 
@@ -73,13 +262,17 @@ def _do_client_request(req_type, payload, pipe_handler=None):
     sock.connect(unix_socket_path)
     req = sock.makefile('wb', 0)
     res = sock.makefile('rb', -1)
+    piped = pipe_handler is not None
+    uid = str(uuid.uuid4())
     try:
         _write_body(req, {
             'req_type': req_type,
-            'payload': payload
+            'payload': payload,
+            'piped': piped,
+            'uid': uid
         })
-        if pipe_handler is not None:
-            pipe_handler(req, res)
+        if piped:
+            pipe_handler(sock, req, res, uid)
         res_body = _read_body(res)
         res_body_payload = res_body['payload']
         if res_body['status'] == RESPONSE_STATUS_ERROR:
@@ -103,6 +296,10 @@ def _write_body(sock, body):
     sock.write(json_body_len)
     sock.write('\r\n')
     sock.write(json_body)
+
+
+def _has_read_data(sock):
+    return len(select.select([sock], [], [], 0.0)[0]) > 0
 
 
 def start_server():

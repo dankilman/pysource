@@ -34,7 +34,7 @@ class FunctionHolder(object):
         if self.piped:
             streams = {
                 '_in': request_context.req_in,
-                '_out': request_context.req_out
+                '_out': request_context.res_out
             }
         return self.wrapper(*parsed_args, **streams)
 
