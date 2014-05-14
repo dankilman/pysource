@@ -39,5 +39,4 @@ def run_function(name, args):
 
 @remote_call
 def run_piped_function(name, args):
-    result = registry.run_function(name, args, piped=True)
-    return {'result': result}
+    return registry.run_function(name, args, piped=True)

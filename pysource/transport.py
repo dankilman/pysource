@@ -34,6 +34,9 @@ from pysource import request_context
 RESPONSE_STATUS_OK = "ok"
 RESPONSE_STATUS_ERROR = "error"
 
+CONTROL_SOCKET_ERROR_CODE = 1
+CONTROL_SOCKET_LENGTH_CODE = 2
+
 unix_socket_path = os.path.join(env.pysource_dir, 'socket')
 
 
@@ -46,27 +49,49 @@ def _handle(req_type, payload, **kwargs):
 
 class RequestHandler(StreamRequestHandler):
 
+    def __init__(self, request, client_address, server):
+        self.pipe_control_handler = None
+        StreamRequestHandler.__init__(self, request, client_address, server)
+
     def handle(self):
         try:
             res_status = RESPONSE_STATUS_OK
             body = _read_body(self.rfile)
             if body['piped'] is True:
-                res_payload = self._handle_piped(body)
+                self.pipe_control_handler = \
+                    PipeControlSocketHandler(body['uid'])
+                self._handle_piped(body, self.pipe_control_handler)
+                res_payload = {}
             else:
                 res_payload = _handle(**body)
         except Exception, e:
             res_status = RESPONSE_STATUS_ERROR
             res_payload = {'error': str(e)}
-        _write_body(self.wfile, {
+
+        if self.pipe_control_handler:
+            response_file = self.pipe_control_handler.wfile
+            if res_status == RESPONSE_STATUS_ERROR:
+                try:
+                    self.wfile.flush()
+                except socket.error:
+                    pass
+                response_file.write('{}\r\n'.format(CONTROL_SOCKET_ERROR_CODE))
+                response_file.flush()
+        else:
+            response_file = self.wfile
+        _write_body(response_file, {
             'payload': res_payload,
             'status': res_status
         })
 
-    def _handle_piped(self, body):
-        uid = body['uid']
+    def finish(self):
+        StreamRequestHandler.finish(self)
+        if self.pipe_control_handler:
+            self.pipe_control_handler.close()
+
+    def _handle_piped(self, body, pipe_control_handler):
         self.connection.setblocking(0)
         try:
-            pipe_control_handler = PipeControlSocketHandler(uid)
             pipe_control_handler.accept()
             piped_input = PipeControlledInputSocket(
                 self.rfile,
@@ -80,13 +105,12 @@ class RequestHandler(StreamRequestHandler):
                 pipe_control_handler.conn)
             request_context.req_in = piped_input
             request_context.res_out = piped_output
-            res_payload = _handle(**body)
+            piped_output.write(str(_handle(**body)))
             piped_input.close()
             piped_output.close()
-            pipe_control_handler.close()
-            return res_payload
         finally:
             self.connection.setblocking(1)
+            pipe_control_handler.conn.setblocking(1)
 
 
 class PipeControlSocketHandler(object):
@@ -160,7 +184,7 @@ class PipeControlledBaseSocket(object):
         self.data_socket = data_socket
         self.control_file = control_file
         self.control_socket = control_socket
-        self.sockets = [data_socket, control_socket]
+        self.sockets = [self.data_socket, self.control_socket]
 
 
 class PipeControlledInputSocket(PipeControlledBaseSocket):
@@ -183,10 +207,25 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
                 break
             readable, _, _ = select.select(self.sockets, [], [], 0.5)
             if self.control_socket in readable:
-                self.total_bytes = int(self.control_file.readline())
+                control_code = int(self.control_file.readline())
+                if control_code == CONTROL_SOCKET_ERROR_CODE:
+                    self.total_bytes = self.bytes_read
+                    break
+                else:
+                    self.total_bytes = int(self.control_file.readline())
             if self.data_socket in readable:
-                to_read = 0 if length <= 0 else length - result.tell()
-                result.write(self.data_file.read(to_read))
+                to_read = 1024 if length <= 0 else length - result.tell()
+                if self.total_bytes and self.total_bytes < to_read:
+                    to_read = self.total_bytes
+                try:
+                    data = self.data_socket.recv(to_read)
+                    self.bytes_read += len(data)
+                    result.write(data)
+                except socket.error, e:
+                    if e.errno == errno.EAGAIN:
+                        pass
+                    else:
+                        raise
                 if 0 < length == result.tell():
                     break
         if self.bytes_read == self.total_bytes:
@@ -209,20 +248,21 @@ class PipeControlledOutputSocket(PipeControlledBaseSocket):
     def write(self, data):
         view = memoryview(data)
         total_bytes_to_write = len(view)
-        remaining_to_write = total_bytes_to_write
+        total_sent = 0
         while True:
-            if remaining_to_write == 0:
+            if total_sent == total_bytes_to_write:
                 break
             _, writable, _ = select.select([], [self.data_socket], [], 0.5)
             if self.data_socket in writable:
-                sent = self.data_socket.send(view[remaining_to_write:])
-                remaining_to_write -= sent
+                sent = self.data_socket.send(view[total_sent:])
+                total_sent += sent
         self.bytes_written += total_bytes_to_write
 
     def close(self):
         self.control_socket.setblocking(1)
-        self.control_file.write(len(self.bytes_written))
-        self.control_file.write('\r\n')
+        length_control_message = '{}\r\n{}\r\n'.format(
+            CONTROL_SOCKET_LENGTH_CODE, self.bytes_written)
+        self.control_file.write(length_control_message)
         self.control_file.flush()
 
 
@@ -251,7 +291,8 @@ def do_piped_client_request(req_type, payload, stdin, stdout):
                 pipe_control_handler.conn)
             shutil.copyfileobj(piped_input, stdout)
             piped_input.close()
-            pipe_control_handler.close()
+            pipe_control_handler.conn.setblocking(1)
+            return pipe_control_handler
         finally:
             sock.setblocking(1)
     return _do_client_request(req_type, payload, pipe_handler)
@@ -272,8 +313,11 @@ def _do_client_request(req_type, payload, pipe_handler=None):
             'uid': uid
         })
         if piped:
-            pipe_handler(sock, req, res, uid)
-        res_body = _read_body(res)
+            pipe_control_handler = pipe_handler(sock, req, res, uid)
+            res_body = _read_body(pipe_control_handler.rfile)
+            pipe_control_handler.close()
+        else:
+            res_body = _read_body(res)
         res_body_payload = res_body['payload']
         if res_body['status'] == RESPONSE_STATUS_ERROR:
             error = res_body_payload['error']
@@ -299,7 +343,7 @@ def _write_body(sock, body):
 
 
 def _has_read_data(sock):
-    return len(select.select([sock], [], [], 0.0)[0]) > 0
+    return sock in select.select([sock], [], [], 0.0)[0]
 
 
 def start_server():
