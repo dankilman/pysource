@@ -103,9 +103,11 @@ class RequestHandler(StreamRequestHandler):
                 self.connection,
                 pipe_control_handler.wfile,
                 pipe_control_handler.conn)
-            request_context.req_in = piped_input
-            request_context.res_out = piped_output
-            piped_output.write(str(_handle(**body)))
+            request_context.stdin = piped_input
+            request_context.stdout = piped_output
+            result = _handle(**body)
+            if result:
+                piped_output.write(str(result))
             piped_input.close()
             piped_output.close()
         finally:

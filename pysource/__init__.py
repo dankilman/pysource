@@ -49,12 +49,28 @@ class RequestContext(threading.local):
     def __init__(self):
         super(RequestContext, self).__init__(self)
         self.registered = []
-        self.req_in = None
-        self.res_out = None
+        self.stdin = None
+        self.stdout = None
 
     def add_registered(self, function_holder):
         self.registered.append(function_holder)
 request_context = RequestContext()
+
+
+class RequestContextOut(object):
+
+    @staticmethod
+    def write(data):
+        request_context.stdout.write(data)
+stdout = RequestContextOut()
+
+
+class RequestContextIn(object):
+
+    @staticmethod
+    def read(length=0):
+        return request_context.stdin.read(length)
+stdin = RequestContextIn()
 
 
 def function(func=None, piped=False):
