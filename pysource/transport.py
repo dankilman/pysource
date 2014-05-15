@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import sys
 import time
 import uuid
 import select
@@ -58,6 +58,7 @@ class RequestHandler(StreamRequestHandler):
             res_status = RESPONSE_STATUS_OK
             body = _read_body(self.rfile)
             if body['piped'] is True:
+                request_context.piped = True
                 self.pipe_control_handler = \
                     PipeControlSocketHandler(body['uid'])
                 self._handle_piped(body, self.pipe_control_handler)
@@ -272,7 +273,7 @@ def do_regular_client_request(req_type, payload):
     return _do_client_request(req_type, payload)
 
 
-def do_piped_client_request(req_type, payload, stdin, stdout):
+def do_piped_client_request(req_type, payload):
     def pipe_handler(sock, req, res, uid):
         sock.setblocking(0)
         try:
@@ -283,15 +284,15 @@ def do_piped_client_request(req_type, payload, stdin, stdout):
                 sock,
                 pipe_control_handler.wfile,
                 pipe_control_handler.conn)
-            if _has_read_data(stdin):
-                shutil.copyfileobj(stdin, piped_output)
+            if _has_read_data(sys.stdin):
+                shutil.copyfileobj(sys.stdin, piped_output)
             piped_output.close()
             piped_input = PipeControlledInputSocket(
                 res,
                 sock,
                 pipe_control_handler.rfile,
                 pipe_control_handler.conn)
-            shutil.copyfileobj(piped_input, stdout)
+            shutil.copyfileobj(piped_input, sys.stdout)
             piped_input.close()
             pipe_control_handler.conn.setblocking(1)
             return pipe_control_handler

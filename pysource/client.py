@@ -36,8 +36,7 @@ def run_function(function_name, args):
 
 
 def run_piped_function(function_name, args):
-    handlers.run_piped_function.piped_remote(
-        name=function_name, args=args)
+    handlers.run_piped_function.remote(name=function_name, args=args)
 
 
 def list_registered():

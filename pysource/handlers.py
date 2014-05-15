@@ -15,7 +15,7 @@
 
 from pysource import request_context
 from pysource import registry
-from pysource import remote_call
+from pysource import remote_call, piped_remote_call
 
 
 @remote_call
@@ -33,10 +33,10 @@ def list_registered():
 
 @remote_call
 def run_function(name, args):
-    result = registry.run_function(name, args, piped=False)
+    result = registry.run_function(name, args)
     return {'result': result}
 
 
-@remote_call
+@piped_remote_call
 def run_piped_function(name, args):
-    return registry.run_function(name, args, piped=True)
+    return registry.run_function(name, args)

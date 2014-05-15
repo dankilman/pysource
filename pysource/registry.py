@@ -47,14 +47,14 @@ def register(function, wrapper, piped):
     request_context.add_registered(holder)
 
 
-def run_function(function_name, args, piped):
+def run_function(function_name, args):
     if function_name not in registered:
         raise RuntimeError('{0} not registered'.format(function_name))
     holder = registered[function_name]
-    if holder.piped and not piped:
+    if holder.piped and not request_context.piped:
         raise RuntimeError('{0} is a piped function but was called as a '
                            'regular function'.format(function_name))
-    if not holder.piped and piped:
+    if not holder.piped and request_context.piped:
         raise RuntimeError('{0} is a regular function but was called as a '
                            'piped function'.format(function_name))
     return holder.run(args)
