@@ -302,7 +302,15 @@ def do_piped_client_request(req_type, payload, stdin, stdout):
 
 def _do_client_request(req_type, payload, pipe_handler=None):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.connect(unix_socket_path)
+    try:
+        sock.connect(unix_socket_path)
+    except socket.error, e:
+        if e.errno == errno.ENOENT:
+            raise ExecutionError('Is the pysource daemon running?'
+                                 ' Run "pysource daemon start" to start it.')
+        else:
+            raise
+
     req = sock.makefile('wb', 0)
     res = sock.makefile('rb', -1)
     piped = pipe_handler is not None
@@ -323,7 +331,7 @@ def _do_client_request(req_type, payload, pipe_handler=None):
         res_body_payload = res_body['payload']
         if res_body['status'] == RESPONSE_STATUS_ERROR:
             error = res_body_payload['error']
-            raise ExecutionError('execution failed: {0}'.format(error))
+            raise ExecutionError('{0}'.format(error))
         return res_body_payload
     finally:
         req.close()
