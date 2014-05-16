@@ -19,7 +19,6 @@ import select
 import os
 import json
 import socket
-import shutil
 import errno
 from SocketServer import (ThreadingUnixStreamServer,
                           StreamRequestHandler)
@@ -39,6 +38,10 @@ CONTROL_SOCKET_LENGTH_CODE = 2
 
 unix_socket_path = os.path.join(env.pysource_dir, 'socket')
 
+
+DEBUG = False
+DEBUG_CLIENT = True
+DEBUG_SERVER = False
 
 def _handle(req_type, payload, **kwargs):
     handler = remote_call_handlers.get(req_type)
@@ -201,41 +204,59 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
         self.total_bytes = None
         self.done = False
 
-    def read(self, length=0):
+    def p(self, message):
+        if DEBUG and ((DEBUG_CLIENT and not request_context.piped) or (DEBUG_SERVER and request_context.piped)):
+            prefix = '(SERVER_IN)' if request_context.piped else '(CLIENT_IN)'
+            print '{} {} (total_bytes={}, bytes_read={}, done={})'.format(prefix, message, self.total_bytes, self.bytes_read, self.done)
+
+    def read(self, length=0, ensure_length=True):
+        self.p('read length={}, ensure_length={}'.format(length, ensure_length))
         if self.done:
             return None
         result = BytesIO()
         while True:
+            self.p('loop')
             if self.bytes_read == self.total_bytes:
                 break
             readable, _, _ = select.select(self.sockets, [], [], 0.5)
             if self.control_socket in readable:
                 control_code = int(self.control_file.readline())
+                self.p('control_code={}'.format(control_code))
                 if control_code == CONTROL_SOCKET_ERROR_CODE:
                     self.total_bytes = self.bytes_read
                     break
                 else:
                     self.total_bytes = int(self.control_file.readline())
+                self.p('total_bytes={}'.format(self.total_bytes))
             if self.data_socket in readable:
                 to_read = 1024 if length <= 0 else length - result.tell()
                 if self.total_bytes and self.total_bytes < to_read:
                     to_read = self.total_bytes
                 try:
                     data = self.data_socket.recv(to_read)
+                    self.p('data={}, len={}'.format(data, len(data)))
                     self.bytes_read += len(data)
                     result.write(data)
                 except socket.error, e:
                     if e.errno == errno.EAGAIN:
-                        pass
+                        self.p('errno.EAGAIN ensure_length={}'.format(ensure_length))
+                        if ensure_length:
+                            pass
+                        else:
+                            break
                     else:
                         raise
                 if 0 < length == result.tell():
                     break
+            if len(readable) == 0 and not ensure_length:
+                break
         if self.bytes_read == self.total_bytes:
             self.done = True
+        self.p('out done={}, bytes_read={}, total_bytes={}'.format(self.done, self.bytes_read, self.total_bytes))
         return result.getvalue()
 
     def close(self):
+        self.p('read_close done={}, bytes_read={}, total_bytes={}'.format(self.done, self.bytes_read, self.total_bytes))
         pass
 
 
@@ -248,7 +269,13 @@ class PipeControlledOutputSocket(PipeControlledBaseSocket):
                                                          control_socket)
         self.bytes_written = 0
 
+    def p(self, message):
+        if DEBUG and ((DEBUG_CLIENT and not request_context.piped) or (DEBUG_SERVER and request_context.piped)):
+            prefix = '(SERVER_OUT)' if request_context.piped else '(CLIENT_OUT)'
+            print '{} {}'.format(prefix, message)
+
     def write(self, data):
+        self.p('write data={}'.format(data))
         view = memoryview(data)
         total_bytes_to_write = len(view)
         total_sent = 0
@@ -260,13 +287,18 @@ class PipeControlledOutputSocket(PipeControlledBaseSocket):
                 sent = self.data_socket.send(view[total_sent:])
                 total_sent += sent
         self.bytes_written += total_bytes_to_write
+        self.p('write out bytes_written={}'.format(self.bytes_written))
 
     def close(self):
+        self.p('write close bytes_written={}'.format(self.bytes_written))
         self.control_socket.setblocking(1)
-        length_control_message = '{}\r\n{}\r\n'.format(
-            CONTROL_SOCKET_LENGTH_CODE, self.bytes_written)
-        self.control_file.write(length_control_message)
-        self.control_file.flush()
+        try:
+            length_control_message = '{}\r\n{}\r\n'.format(
+                CONTROL_SOCKET_LENGTH_CODE, self.bytes_written)
+            self.control_file.write(length_control_message)
+            self.control_file.flush()
+        finally:
+            self.control_socket.setblocking(0)
 
 
 def do_regular_client_request(req_type, payload):
@@ -274,6 +306,11 @@ def do_regular_client_request(req_type, payload):
 
 
 def do_piped_client_request(req_type, payload):
+
+    def p(message):
+        if DEBUG:
+            print '(CLIENT) {}'.format(message)
+
     def pipe_handler(sock, req, res, uid):
         sock.setblocking(0)
         try:
@@ -284,22 +321,77 @@ def do_piped_client_request(req_type, payload):
                 sock,
                 pipe_control_handler.wfile,
                 pipe_control_handler.conn)
-            if _has_read_data(sys.stdin):
-                shutil.copyfileobj(sys.stdin, piped_output)
-            try:
-                piped_output.close()
-            except socket.error, e:
-                if e.errno in [errno.EPIPE]:
-                    raise ExecutionError('while closing piped output socket: '
-                                         '{}'.format(e))
-                else:
-                    raise
             piped_input = PipeControlledInputSocket(
                 res,
                 sock,
                 pipe_control_handler.rfile,
                 pipe_control_handler.conn)
-            shutil.copyfileobj(piped_input, sys.stdout)
+
+            stdin_buf = 16 * 1024
+            data_sock_buf = 1024
+            stdin = sys.stdin
+            data_sock = sock
+            control_soc = pipe_control_handler.conn
+            read_sockets = [stdin, data_sock, control_soc]
+            control_soc_written = False
+            stdin_done = False
+            stdin_done_handled = False
+
+            count = 0
+            while True:
+                if count % 1000 == 0:
+                    p('loop count={}'.format(count))
+                count += 1
+                readable = select.select(read_sockets, [], [], 0.01)[0]
+                if stdin in readable:
+                    buf = stdin.read(stdin_buf)
+                    if not buf:
+                        stdin_done = True
+                    else:
+                        p('stdin readable')
+                        piped_output.write(buf)
+                        p('write_buf ended')
+                else:
+                    stdin_done = True
+                if not stdin_done_handled and stdin_done:
+                    piped_output.close()
+                    p('piped_output_close')
+                    read_sockets = [control_soc, data_sock]
+                    stdin_done_handled = True
+                if control_soc in readable:
+                    control_soc_written = True
+                    p('control_sock_written=True')
+                if data_sock in readable or control_soc in readable:
+                    if control_soc_written:
+                        p('piped_input_read()')
+                        buf = piped_input.read()
+                    else:
+                        p('piped_input_read(data_sock_buf)')
+                        buf = piped_input.read(data_sock_buf,
+                                               ensure_length=False)
+                    if buf is None:
+                        p('buf is None')
+                        break
+                    p('read ended len={}'.format(len(buf)))
+                    if len(buf) > 0:
+                        p('stdout.write len={}'.format(len(buf)))
+                        sys.stdout.write(buf)
+                        try:
+                            sys.stdout.flush()
+                        except IOError, e:
+                            if e.errno == errno.EPIPE:
+                                raise ExecutionError('Flushing stdout failed.'
+                                                     ' It seems the process'
+                                                     ' being piped to, '
+                                                     'terminated.')
+                            else:
+                                raise
+                    else:
+                        p('stdout.write NO_WRITE')
+                if control_soc_written:
+                    break
+
+            p('piped_input_close')
             piped_input.close()
             pipe_control_handler.conn.setblocking(1)
             return pipe_control_handler
@@ -358,10 +450,6 @@ def _write_body(sock, body):
     sock.write(json_body_len)
     sock.write('\r\n')
     sock.write(json_body)
-
-
-def _has_read_data(sock):
-    return sock in select.select([sock], [], [], 0.0)[0]
 
 
 def start_server():
