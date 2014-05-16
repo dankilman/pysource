@@ -65,9 +65,19 @@ def source_named(function_name, verbose=False):
                                verbose=verbose)
 
 
+def source_def(def_content, verbose=False):
+    return client.source_def(def_content,
+                             verbose=verbose)
+
+
+def source_inline(content, verbose=False):
+    return client.source_content(content,
+                                 verbose=verbose)
+
+
 def source(source_path, verbose=False):
-    return client.source_register(source_path,
-                                  verbose=verbose)
+    return client.source_path(source_path,
+                              verbose=verbose)
 
 
 def run(function_name, *args):
@@ -81,7 +91,9 @@ def main():
         run,
         list_registered,
         source_registered,
-        source_named
+        source_named,
+        source_def,
+        source_inline
     ], completion=False)
 
 

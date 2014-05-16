@@ -22,13 +22,18 @@ pysource()
         daemon|list-registered|run)
             __pysource_main "$@"
             ;;
-        source|source-registered|source-named)
+        source|source-registered|source-named|source-def|source-inline)
             __pysource_source "$@"
             ;;
         *)
             __pysource_source source "$@"
             ;;
     esac
+}
+
+def()
+{
+    __pysource_source source-def "$@"
 }
 
 __pysource_main()
@@ -38,7 +43,7 @@ __pysource_main()
 
 __pysource_source()
 {
-    local output="$(__pysource_main $@)"
+    local output=$(__pysource_main "$@")
     if [[ $output == \#GENERATED_BY_PYSOURCE* ]]
     then
         if [[ $output == \#GENERATED_BY_PYSOURCE_VERBOSE* ]]
@@ -50,14 +55,4 @@ __pysource_source()
     else
         echo "$output"
     fi
-}
-
-def()
-{
-    local definition="$1"
-    local fulldefinition="import pysource
-@pysource.function
-def $definition
-"
-    __pysource_source source <(echo "$fulldefinition")
 }

@@ -14,20 +14,11 @@
 
 
 import os
+from StringIO import StringIO
 
 from pysource import shell
 from pysource import ExecutionError
 from pysource import handlers
-
-
-def source_register(source_path, verbose=False):
-    if not os.path.exists(source_path):
-        raise ExecutionError('{0} does not exist'.format(source_path))
-    with open(source_path, 'r') as f:
-        source_content = f.read()
-    result = handlers.source_register.remote(source_content=source_content)
-    return shell.create_shell_functions(result['names'],
-                                        verbose=verbose)
 
 
 def run_function(function_name, args):
@@ -47,4 +38,29 @@ def source_registered(verbose=False):
 
 def source_named(function_name, verbose=False):
     return shell.create_shell_functions([function_name],
+                                        verbose=verbose)
+
+
+def source_path(file_path, verbose=False):
+    if not os.path.exists(file_path):
+        raise ExecutionError('{0} does not exist'.format(file_path))
+    with open(file_path, 'r') as f:
+        content = f.read()
+    return source_content(content,
+                          verbose=verbose)
+
+
+def source_def(def_content, verbose=False):
+    content = StringIO()
+    content.writelines([
+        'import pysource\n',
+        '@pysource.function\n',
+        'def {}'.format(def_content)])
+    return source_content(content.getvalue(),
+                          verbose=verbose)
+
+
+def source_content(content, verbose):
+    result = handlers.source_register.remote(source_content=content)
+    return shell.create_shell_functions(result['names'],
                                         verbose=verbose)
