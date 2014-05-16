@@ -46,16 +46,6 @@ def source_named(function_name, piped=False, verbose=False):
                                         verbose=verbose)
 
 
-def source_register(source_path, verbose=False):
-    if not os.path.exists(source_path):
-        raise ExecutionError('{0} does not exist'.format(source_path))
-    with open(source_path, 'r') as f:
-        source_content = f.read()
-    result = handlers.source_register.remote(source_content=source_content)
-    return shell.create_shell_functions(result['descriptors'],
-                                        verbose=verbose)
-
-
 def source_path(file_path, verbose=False):
     if not os.path.exists(file_path):
         raise ExecutionError('{0} does not exist'.format(file_path))
@@ -77,5 +67,5 @@ def source_def(def_content, verbose=False):
 
 def source_content(content, verbose):
     result = handlers.source_register.remote(source_content=content)
-    return shell.create_shell_functions(result['names'],
+    return shell.create_shell_functions(result['descriptors'],
                                         verbose=verbose)
