@@ -62,7 +62,7 @@ __pysource_complete()
     local cur prev pysource_opts daemon_opts
     cur=${COMP_WORDS[COMP_CWORD]}
     prev=${COMP_WORDS[COMP_CWORD-1]}
-    pysource_opts="daemon list-registered run source source-def source-inline source-named source-registered"
+    pysource_opts="daemon list-registered run run-piped source source-def source-inline source-named source-registered"
 
     case "$prev" in
         daemon)
