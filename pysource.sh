@@ -22,13 +22,18 @@ pysource()
         daemon|list-registered|run|run-piped)
             __pysource_main "$@"
             ;;
-        source|source-registered|source-named)
+        source|source-registered|source-named|source-def|source-inline)
             __pysource_source "$@"
             ;;
         *)
             __pysource_source source "$@"
             ;;
     esac
+}
+
+def()
+{
+    __pysource_source source-def "$@"
 }
 
 __pysource_main()
@@ -38,7 +43,7 @@ __pysource_main()
 
 __pysource_source()
 {
-    local output="$(__pysource_main $@)"
+    local output=$(__pysource_main "$@")
     if [[ $output == \#GENERATED_BY_PYSOURCE* ]]
     then
         if [[ $output == \#GENERATED_BY_PYSOURCE_VERBOSE* ]]
@@ -52,12 +57,23 @@ __pysource_source()
     fi
 }
 
-def()
+__pysource_complete()
 {
-    local definition="$1"
-    local fulldefinition="import pysource
-@pysource.function
-def $definition
-"
-    __pysource_source source <(echo "$fulldefinition")
+    local cur prev pysource_opts daemon_opts
+    cur=${COMP_WORDS[COMP_CWORD]}
+    prev=${COMP_WORDS[COMP_CWORD-1]}
+    pysource_opts="daemon list-registered run source source-def source-inline source-named source-registered"
+
+    case "$prev" in
+        daemon)
+            daemon_opts="start stop restart status"
+            COMPREPLY=( $( compgen -W "${daemon_opts}" -- $cur ) )
+            return 0
+            ;;
+        *)
+            ;;
+    esac
+
+    COMPREPLY=( $( compgen -W "${pysource_opts}" -- $cur ) )
 }
+complete -F __pysource_complete pysource
