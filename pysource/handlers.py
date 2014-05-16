@@ -16,11 +16,12 @@
 from pysource import request_context
 from pysource import registry
 from pysource import remote_call, piped_remote_call
+from pysource import global_env
 
 
 @remote_call
 def source_register(source_content):
-    exec(source_content, globals())
+    global_env.__pysource_evaluate__(source_content)
     descriptors = [reg.to_dict() for reg in request_context.registered]
     return {'descriptors': descriptors}
 
