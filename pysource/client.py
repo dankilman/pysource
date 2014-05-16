@@ -20,16 +20,6 @@ from pysource import ExecutionError
 from pysource import handlers
 
 
-def source_register(source_path, verbose=False):
-    if not os.path.exists(source_path):
-        raise ExecutionError('{0} does not exist'.format(source_path))
-    with open(source_path, 'r') as f:
-        source_content = f.read()
-    result = handlers.source_register.remote(source_content=source_content)
-    return shell.create_shell_functions(result['descriptors'],
-                                        verbose=verbose)
-
-
 def run_function(function_name, args):
     result = handlers.run_function.remote(name=function_name, args=args)
     return result['result']
@@ -52,4 +42,14 @@ def source_registered(verbose=False):
 def source_named(function_name, piped=False, verbose=False):
     descriptor = {'name': function_name, 'piped': piped}
     return shell.create_shell_functions([descriptor],
+                                        verbose=verbose)
+
+
+def source_register(source_path, verbose=False):
+    if not os.path.exists(source_path):
+        raise ExecutionError('{0} does not exist'.format(source_path))
+    with open(source_path, 'r') as f:
+        source_content = f.read()
+    result = handlers.source_register.remote(source_content=source_content)
+    return shell.create_shell_functions(result['descriptors'],
                                         verbose=verbose)
