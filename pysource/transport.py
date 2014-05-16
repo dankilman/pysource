@@ -286,7 +286,12 @@ def do_piped_client_request(req_type, payload):
                 pipe_control_handler.conn)
             if _has_read_data(sys.stdin):
                 shutil.copyfileobj(sys.stdin, piped_output)
-            piped_output.close()
+            try:
+                piped_output.close()
+            except socket.error, e:
+                if e.errno in [errno.EPIPE]:
+                    raise ExecutionError('while closing piped output socket: '
+                                         '{}'.format(e))
             piped_input = PipeControlledInputSocket(
                 res,
                 sock,
@@ -306,7 +311,7 @@ def _do_client_request(req_type, payload, pipe_handler=None):
     try:
         sock.connect(unix_socket_path)
     except socket.error, e:
-        if e.errno == errno.ENOENT:
+        if e.errno in [errno.ENOENT, errno.ECONNREFUSED]:
             raise ExecutionError('Is the pysource daemon running?'
                                  ' Run "pysource daemon start" to start it.')
         else:
