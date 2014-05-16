@@ -20,7 +20,9 @@ import argh
 remote_call_handlers = {}
 
 
-def _remote_method(request_type, piped):
+def _remote_wrapper(func, piped):
+    request_type = func.__name__
+
     def remote(**kwargs):
         # import here to avoid cyclic dependencies
         if piped:
@@ -30,17 +32,12 @@ def _remote_method(request_type, piped):
             from pysource.transport import do_regular_client_request \
                 as do_client_request
         return do_client_request(request_type, kwargs)
-    return remote
-
-
-def _remote_wrapper(func, piped):
-    request_type = func.__name__
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
     remote_call_handlers[request_type] = wrapper
-    wrapper.remote = _remote_method(request_type, piped=piped)
+    wrapper.remote = remote
     return wrapper
 
 

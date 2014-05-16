@@ -81,7 +81,7 @@ def run(function_name, *args):
 
 
 def run_piped(function_name, *args):
-    return client.run_piped_function(function_name, args)
+    client.run_piped_function(function_name, args)
 
 
 def main():
