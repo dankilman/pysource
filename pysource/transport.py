@@ -43,6 +43,7 @@ DEBUG = False
 DEBUG_CLIENT = True
 DEBUG_SERVER = False
 
+
 def _handle(req_type, payload, **kwargs):
     handler = remote_call_handlers.get(req_type)
     if handler is None:
