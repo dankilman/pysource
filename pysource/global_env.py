@@ -12,27 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from pysource import request_context
-from pysource import registry
-from pysource import remote_call
-from pysource import global_env
+"""Code evaluation context"""
 
 
-@remote_call
-def source_register(source_content):
-    global_env.__pysource_evaluate__(source_content)
-    names = [reg.name for reg in request_context.registered]
-    return {'names': names}
-
-
-@remote_call
-def list_registered():
-    names = [reg.name for reg in registry.get_registered()]
-    return {'names': names}
-
-
-@remote_call
-def run_function(name, args):
-    result = registry.run_function(name, args)
-    return {'result': result}
+def __pysource_evaluate__(source_content):
+    exec(source_content, globals())
