@@ -292,6 +292,8 @@ def do_piped_client_request(req_type, payload):
                 if e.errno in [errno.EPIPE]:
                     raise ExecutionError('while closing piped output socket: '
                                          '{}'.format(e))
+                else:
+                    raise
             piped_input = PipeControlledInputSocket(
                 res,
                 sock,
