@@ -38,3 +38,19 @@ class ArgumentsTest(TestCase):
         def fun(arg1, arg2=int):
             pass
         self._assert_valid_parsing(fun, ['1', '2'], ['1', 2])
+
+    def test_varargs(self):
+        def fun(arg1, arg2=int, *args):
+            pass
+        self._assert_valid_parsing(fun, ['1', '2', '3', '4'],
+                                   ['1', 2, '3', '4'])
+
+    def test_validation_no_varargs(self):
+        def fun(arg1):
+            pass
+        self.assertRaises(RuntimeError, ArgTypeSpec(fun).parse, [])
+
+    def test_validation_with_varargs(self):
+        def fun(arg1, *args):
+            pass
+        self.assertRaises(RuntimeError, ArgTypeSpec(fun).parse, [])
