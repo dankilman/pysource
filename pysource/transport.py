@@ -36,7 +36,7 @@ RESPONSE_STATUS_ERROR = "error"
 CONTROL_SOCKET_ERROR_CODE = 1
 CONTROL_SOCKET_LENGTH_CODE = 2
 
-unix_socket_path = os.path.join(config.pysource_dir, 'socket')
+unix_socket_path = lambda: os.path.join(config.pysource_dir, 'socket')
 
 
 DEBUG = False
@@ -412,7 +412,7 @@ def do_piped_client_request(req_type, payload):
 def _do_client_request(req_type, payload, pipe_handler=None):
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
-        sock.connect(unix_socket_path)
+        sock.connect(unix_socket_path())
     except socket.error, e:
         if e.errno in [errno.ENOENT, errno.ECONNREFUSED]:
             raise pysource.error('Is the pysource daemon running?'
@@ -462,12 +462,12 @@ def _write_body(sock, body):
 
 
 def start_server():
-    server = ThreadingUnixStreamServer(unix_socket_path,
+    server = ThreadingUnixStreamServer(unix_socket_path(),
                                        RequestHandler)
     server.serve_forever()
 
 
 def cleanup():
     """Used for forced cleanup"""
-    if os.path.exists(unix_socket_path):
-        os.remove(unix_socket_path)
+    if os.path.exists(unix_socket_path()):
+        os.remove(unix_socket_path())

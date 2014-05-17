@@ -28,12 +28,12 @@ STATUS_STOPPED = 'stopped'
 STATUS_RUNNING = 'running'
 STATUS_CORRUPTED = 'corrupted'
 
-_pidfile_dir = config.pysource_dir
-_pidfile_path = os.path.join(_pidfile_dir, 'pidfile')
-_pidfile = lockfile.FileLock(_pidfile_path)
+_pidfile_dir = lambda: config.pysource_dir
+_pidfile_path = lambda: os.path.join(_pidfile_dir(), 'pidfile')
+_pidfile = lambda: lockfile.FileLock(_pidfile_path())
 
 _context = daemon.DaemonContext(
-    pidfile=_pidfile,
+    pidfile=_pidfile(),
     stdout=sys.stdout,
     stderr=sys.stderr
 )
@@ -43,7 +43,7 @@ def start():
     _make_pysource_dir()
     stat, _ = status()
     if stat == STATUS_CORRUPTED:
-        _pidfile.break_lock()
+        _pidfile().break_lock()
         transport.cleanup()
     elif stat == STATUS_RUNNING:
         return False
@@ -72,25 +72,25 @@ def restart():
 def status():
     stat = STATUS_STOPPED
     pid = None
-    if _pidfile.is_locked():
+    if _pidfile().is_locked():
         pid = _read_pid()
         stat = STATUS_RUNNING if _process_is_running(pid) else STATUS_CORRUPTED
     return stat, pid
 
 
 def _write_pid():
-    with open(_pidfile.lock_file, 'w') as f:
+    with open(_pidfile().lock_file, 'w') as f:
         f.write(str(os.getpid()))
 
 
 def _read_pid():
-    with open(_pidfile.lock_file, 'r') as f:
+    with open(_pidfile().lock_file, 'r') as f:
         return int(f.read())
 
 
 def _make_pysource_dir():
     try:
-        os.mkdir(_pidfile_dir)
+        os.mkdir(_pidfile_dir())
     except OSError, e:
         if e.errno != errno.EEXIST:
             raise

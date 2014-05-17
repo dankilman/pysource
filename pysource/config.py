@@ -13,6 +13,9 @@
 # limitations under the License.
 
 
-import os
+from os.path import expanduser
+from os import environ
 
-pysource_dir = os.path.expanduser('~/.pysource')
+DEFAULT_PYSOURCE_HOME = '~/.pysource'
+pysource_dir = expanduser(environ.get('PYSOURCE_HOME',
+                                      DEFAULT_PYSOURCE_HOME))
