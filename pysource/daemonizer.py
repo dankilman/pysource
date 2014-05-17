@@ -22,13 +22,13 @@ import time
 import daemon
 import lockfile
 
-from pysource import env, transport
+from pysource import config, transport
 
 STATUS_STOPPED = 'stopped'
 STATUS_RUNNING = 'running'
 STATUS_CORRUPTED = 'corrupted'
 
-_pidfile_dir = env.pysource_dir
+_pidfile_dir = config.pysource_dir
 _pidfile_path = os.path.join(_pidfile_dir, 'pidfile')
 _pidfile = lockfile.FileLock(_pidfile_path)
 

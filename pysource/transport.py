@@ -25,7 +25,7 @@ from SocketServer import (ThreadingUnixStreamServer,
 from io import BytesIO
 
 import pysource
-from pysource import env
+from pysource import config
 from pysource import remote_call_handlers
 from pysource import request_context
 
@@ -36,7 +36,7 @@ RESPONSE_STATUS_ERROR = "error"
 CONTROL_SOCKET_ERROR_CODE = 1
 CONTROL_SOCKET_LENGTH_CODE = 2
 
-unix_socket_path = os.path.join(env.pysource_dir, 'socket')
+unix_socket_path = os.path.join(config.pysource_dir, 'socket')
 
 
 DEBUG = False
@@ -125,7 +125,7 @@ class PipeControlSocketHandler(object):
     def __init__(self, uid):
         self.uid = uid
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.unix_socket_path = os.path.join(env.pysource_dir, self.uid)
+        self.unix_socket_path = os.path.join(config.pysource_dir, self.uid)
         self.conn = None
         self.wfile = None
         self.rfile = None
