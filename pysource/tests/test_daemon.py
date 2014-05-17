@@ -23,7 +23,7 @@ from base import BaseTestClass
 class DaemonTest(BaseTestClass):
 
     def test_start_not_running(self):
-        self.start_daemon()
+        self.daemon_start()
         self.wait_for_status(daemonizer.STATUS_RUNNING)
 
     def test_start_already_running(self):
@@ -39,11 +39,11 @@ class DaemonTest(BaseTestClass):
 
     def test_stop_running(self):
         self.test_start_not_running()
-        self.stop_daemon()
+        self.daemon_stop()
         self.wait_for_status(daemonizer.STATUS_STOPPED)
 
     def test_stop_not_running(self):
-        self.stop_daemon()
+        self.daemon_stop()
         self.wait_for_status(daemonizer.STATUS_STOPPED)
 
     def test_stop_corrupted(self):
@@ -53,7 +53,7 @@ class DaemonTest(BaseTestClass):
         self.wait_for_status(daemonizer.STATUS_CORRUPTED)
 
     def test_restart_not_running(self):
-        self.restart_daemon()
+        self.daemon_restart()
         self.wait_for_status(daemonizer.STATUS_RUNNING)
 
     def test_restart_running(self):
@@ -69,17 +69,17 @@ class DaemonTest(BaseTestClass):
     def test_status_running(self):
         self.test_start_not_running()
         self.assertTrue('Daemon is (probably) running'
-                        in self.status_daemon())
+                        in self.daemon_status())
 
     def test_status_not_running(self):
         self.assertEqual('Daemon is (probably) stopped',
-                         self.status_daemon().strip())
+                         self.daemon_status())
 
     def test_status_corrupted(self):
         self.test_start_not_running()
         self.kill_daemon()
         self.assertTrue('Daemon pidfile exists but'
-                        in self.status_daemon())
+                        in self.daemon_status())
 
     def test_unknown_action(self):
         self.assertRaises(sh.ErrorReturnCode,

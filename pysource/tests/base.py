@@ -57,7 +57,7 @@ class BaseTestClass(TestCase):
         if bg:
             bash(script_path, _bg=bg)
         else:
-            return sh.bash(script_path)
+            return sh.bash(script_path).strip()
 
     def _create_script(self, commands):
         script_path = tempfile.mktemp(dir=self.workdir)
@@ -86,22 +86,39 @@ class BaseTestClass(TestCase):
             self.assertEqual(status, expected_status)
         self._repetitive(run)
 
-    def start_daemon(self):
+    def daemon_start(self, wait_for_started=False):
         self.run_pysource_script([
             'pysource daemon start'
         ], bg=True)
+        if wait_for_started:
+            self.wait_for_status(daemonizer.STATUS_RUNNING)
 
-    def stop_daemon(self):
+    def daemon_stop(self, wait_for_stopped=False):
         self.run_pysource_script([
             'pysource daemon stop'
         ], bg=True)
+        if wait_for_stopped:
+            self.wait_for_status(daemonizer.STATUS_STOPPED)
 
-    def restart_daemon(self):
+    def daemon_restart(self):
         self.run_pysource_script([
             'pysource daemon restart'
         ], bg=True)
 
-    def status_daemon(self):
+    def daemon_status(self):
         return self.run_pysource_script([
             'pysource daemon status'
         ], bg=False)
+
+    def list_registered(self):
+        return self.run_pysource_script([
+            'pysource list-registered'
+        ])
+
+    def source_def(self, def_content, piped=False, verbose=False):
+        return self.run_pysource_script([
+            "pysource source-def '{}' {} {}"
+            .format(def_content,
+                    '-p' if piped else '',
+                    '-v' if verbose else '')
+        ])
