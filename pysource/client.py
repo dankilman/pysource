@@ -16,8 +16,8 @@
 import os
 from StringIO import StringIO
 
+import pysource
 from pysource import shell
-from pysource import ExecutionError
 from pysource import handlers
 
 
@@ -48,7 +48,7 @@ def source_named(function_name, piped=False, verbose=False):
 
 def source_path(file_path, verbose=False):
     if not os.path.exists(file_path):
-        raise ExecutionError('{0} does not exist'.format(file_path))
+        raise pysource.error('{0} does not exist'.format(file_path))
     with open(file_path, 'r') as f:
         content = f.read()
     return source_content(content,

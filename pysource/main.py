@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+from StringIO import StringIO
 
 import argh
 
+import pysource
 from pysource import daemonizer
 from pysource import client
 
@@ -44,9 +47,9 @@ def daemon(action):
         else:
             return 'Daemon is (probably) running (pid: {0})'.format(pid)
     else:
-        raise argh.CommandError('unrecognized action: {0} '
-                                '[valid: start, stop, restart, status]'
-                                .format(action))
+        raise pysource.error('unrecognized action: {0} '
+                             '[valid: start, stop, restart, status]'
+                             .format(action))
 
 
 def list_registered():
@@ -96,6 +99,7 @@ def run_piped(function_name, *args):
 
 
 def main():
+    errors = StringIO()
     argh.dispatch_commands([
         daemon,
         source,
@@ -106,7 +110,9 @@ def main():
         source_named,
         source_def,
         source_inline
-    ], completion=False)
+    ], completion=False, errors_file=errors)
+    if errors.len > 0:
+        sys.exit(errors.getvalue().strip())
 
 
 if __name__ == '__main__':

@@ -94,5 +94,5 @@ def function(func=None, piped=False):
         return partial_wrapper
 
 
-class ExecutionError(argh.CommandError):
+class error(argh.CommandError):
     pass

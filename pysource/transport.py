@@ -24,8 +24,8 @@ from SocketServer import (ThreadingUnixStreamServer,
                           StreamRequestHandler)
 from io import BytesIO
 
+import pysource
 from pysource import env
-from pysource import ExecutionError
 from pysource import remote_call_handlers
 from pysource import request_context
 
@@ -381,7 +381,7 @@ def do_piped_client_request(req_type, payload):
                             sys.stdout.flush()
                         except IOError, e:
                             if e.errno == errno.EPIPE:
-                                raise ExecutionError('Flushing stdout failed.'
+                                raise pysource.error('Flushing stdout failed.'
                                                      ' It seems the process'
                                                      ' being piped to, '
                                                      'terminated.')
@@ -407,7 +407,7 @@ def _do_client_request(req_type, payload, pipe_handler=None):
         sock.connect(unix_socket_path)
     except socket.error, e:
         if e.errno in [errno.ENOENT, errno.ECONNREFUSED]:
-            raise ExecutionError('Is the pysource daemon running?'
+            raise pysource.error('Is the pysource daemon running?'
                                  ' Run "pysource daemon start" to start it.')
         else:
             raise
@@ -432,7 +432,7 @@ def _do_client_request(req_type, payload, pipe_handler=None):
         res_body_payload = res_body['payload']
         if res_body['status'] == RESPONSE_STATUS_ERROR:
             error = res_body_payload['error']
-            raise ExecutionError('{0}'.format(error))
+            raise pysource.error('{0}'.format(error))
         return res_body_payload
     finally:
         req.close()

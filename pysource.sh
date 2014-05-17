@@ -49,11 +49,13 @@ __pysource_source()
         if [[ $output == \#GENERATED_BY_PYSOURCE_VERBOSE* ]]
         then
             echo "Sourcing:"
-            echo "$output"
+            printf "$output"
         fi
         eval "$output"
+        return 0
     else
-        echo "$output"
+        printf "$output"
+        return 1
     fi
 }
 
