@@ -64,7 +64,7 @@ class BaseTestCase(TestCase):
             return sh.bash(script_path).strip()
 
     def _create_script(self, commands):
-        script_path = tempfile.mktemp(dir=self.workdir)
+        script_path = tempfile.mktemp(prefix='pysource-', dir=self.workdir)
         with open(script_path, 'w') as f:
             export_command = 'export PYSOURCE_HOME={}'.format(self.workdir)
             source_command = 'source $(which pysource.sh)'
@@ -104,10 +104,12 @@ class BaseTestCase(TestCase):
         if wait_for_stopped:
             self.wait_for_status(daemonizer.STATUS_STOPPED)
 
-    def daemon_restart(self):
+    def daemon_restart(self, wait_for_started=False):
         self.run_pysource_script([
             command.daemon('restart')
         ], bg=True)
+        if wait_for_started:
+            self.wait_for_status(daemonizer.STATUS_RUNNING)
 
     def daemon_status(self):
         return self.run_pysource_script([

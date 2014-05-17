@@ -470,4 +470,11 @@ def start_server():
 def cleanup():
     """Used for forced cleanup"""
     if os.path.exists(unix_socket_path()):
-        os.remove(unix_socket_path())
+        try:
+            os.remove(unix_socket_path())
+        except (OSError, IOError), e:
+            # could happen in tests
+            if e.errno == errno.ENOENT:
+                pass
+            else:
+                raise

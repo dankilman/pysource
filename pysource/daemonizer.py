@@ -53,18 +53,24 @@ def start():
 
 
 def stop(stat=None):
-    stat = stat or status()[0]
+    stat, pid = stat or status()
     if stat != STATUS_RUNNING:
         return False
-    os.kill(_read_pid(), signal.SIGTERM)
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except OSError, e:
+        if e.errno == errno.ESRCH:
+            pass
+        else:
+            raise
     transport.cleanup()
     return True
 
 
 def restart():
-    stat, _ = status()
+    stat, pid = status()
     if stat == STATUS_RUNNING:
-        stop(stat)
+        stop((stat, pid))
         time.sleep(1)
     start()
 
