@@ -21,7 +21,7 @@ from base import BaseTestCase
 
 class DaemonFilesTest(BaseTestCase):
 
-    def assert_valid_state(self,running, expected_extra):
+    def assert_valid_state(self, running, expected_extra):
         # 3 daemon files + the extra are test script file
         files = os.listdir(self.workdir)
         if running:
