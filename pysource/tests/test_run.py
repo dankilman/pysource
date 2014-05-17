@@ -60,6 +60,13 @@ class RunTest(WithDaemonTestCase):
         ])
         self.assertEqual(output, str(names+names))
 
+    def test_run_with_kwargs(self):
+        output = self.run_pysource_script([
+            command.source_def('function1(**kwargs): return 1'),
+            command.run('function1')
+        ])
+        self.assertEqual(output, '1')
+
     def test_run_with_args_and_varargs(self):
         name = u'jane'
         names = [u'john', u'doe']
