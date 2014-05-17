@@ -77,8 +77,9 @@ def source_registered(verbose=False):
     return client.source_registered(verbose=verbose)
 
 
-def source_named(function_name, verbose=False):
+def source_named(function_name, piped=False, verbose=False):
     return client.source_named(function_name,
+                               piped=piped,
                                verbose=verbose)
 
 
