@@ -35,3 +35,22 @@ def run_explicit(function_name, *args):
 def run(function_name, *args):
     args = [str(arg) for arg in args]
     return '{} {}'.format(function_name, ' '.join(args))
+
+
+def update_env(verbose=False, **env):
+    return '{} pysource update-env {}'.format(
+        ' '.join('{}={}'.format(key, value) for key, value in env.items()),
+        '-v' if verbose else '')
+
+
+def source_inline(source_content, verbose=False):
+    return "pysource source-inline '{}' {}".format(
+        source_content,
+        '-v' if verbose else '')
+
+
+def source_named(function_name, piped=False, verbose=False):
+    return 'pysource source-named {} {} {}'.format(
+        function_name,
+        '-p' if piped else '',
+        '-v' if verbose else '')

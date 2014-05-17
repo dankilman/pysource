@@ -65,9 +65,9 @@ def list_registered():
             yield '{}{}'.format(name, suffix)
 
 
-def update_env():
+def update_env(verbose=False):
     status = client.update_env()
-    if status == 'updated':
+    if status == 'updated' and verbose:
         return 'Environment updated'
     else:
         raise pysource.error('Failed updating environment')
