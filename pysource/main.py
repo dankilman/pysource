@@ -100,7 +100,7 @@ def source(source_path, verbose=False):
 
 
 def run(function_name, *args):
-    return client.run_function(function_name, args)
+    return str(client.run_function(function_name, args))
 
 
 def run_piped(function_name, *args):

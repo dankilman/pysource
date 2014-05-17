@@ -17,10 +17,11 @@ import sh
 
 from pysource import daemonizer
 
-from base import BaseTestClass
+from base import BaseTestCase
+from pysource.tests import command
 
 
-class DaemonTest(BaseTestClass):
+class DaemonTest(BaseTestCase):
 
     def test_start_not_running(self):
         self.daemon_start()
@@ -84,4 +85,4 @@ class DaemonTest(BaseTestClass):
     def test_unknown_action(self):
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
-                          ['pysource daemon idonotexist'])
+                          [command.daemon('i_do_not_exist')])

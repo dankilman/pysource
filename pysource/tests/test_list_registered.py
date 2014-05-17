@@ -16,14 +16,10 @@
 import sh
 
 
-from base import BaseTestClass
+from base import WithDaemonTestCase
 
 
-class ListRegisteredTest(BaseTestClass):
-
-    def setUp(self):
-        super(ListRegisteredTest, self).setUp()
-        self.daemon_start(wait_for_started=True)
+class ListRegisteredTest(WithDaemonTestCase):
 
     def test_list_empty(self):
         self.assertEqual(self.list_registered(),

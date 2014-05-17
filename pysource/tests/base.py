@@ -25,15 +25,17 @@ import sh
 from pysource import config
 from pysource import daemonizer
 
+from pysource.tests import command
 
-def bake(command):
-    return command.bake(_out=lambda line: sys.stdout.write(line),
-                        _err=lambda line: sys.stderr.write(line))
+
+def bake(sh_command):
+    return sh_command.bake(_out=lambda line: sys.stdout.write(line),
+                           _err=lambda line: sys.stderr.write(line))
 bash = bake(sh.bash)
 pkill = bake(sh.pkill)
 
 
-class BaseTestClass(TestCase):
+class BaseTestCase(TestCase):
 
     def setUp(self):
         workdir = tempfile.mkdtemp(suffix='', prefix='pysource-test-')
@@ -88,37 +90,44 @@ class BaseTestClass(TestCase):
 
     def daemon_start(self, wait_for_started=False):
         self.run_pysource_script([
-            'pysource daemon start'
+            command.daemon('start')
         ], bg=True)
         if wait_for_started:
             self.wait_for_status(daemonizer.STATUS_RUNNING)
 
     def daemon_stop(self, wait_for_stopped=False):
         self.run_pysource_script([
-            'pysource daemon stop'
+            command.daemon('stop')
         ], bg=True)
         if wait_for_stopped:
             self.wait_for_status(daemonizer.STATUS_STOPPED)
 
     def daemon_restart(self):
         self.run_pysource_script([
-            'pysource daemon restart'
+            command.daemon('restart')
         ], bg=True)
 
     def daemon_status(self):
         return self.run_pysource_script([
-            'pysource daemon status'
+            command.daemon('status')
         ], bg=False)
 
     def list_registered(self):
         return self.run_pysource_script([
-            'pysource list-registered'
+            command.list_registered()
         ])
 
     def source_def(self, def_content, piped=False, verbose=False):
         return self.run_pysource_script([
-            "pysource source-def '{}' {} {}"
-            .format(def_content,
-                    '-p' if piped else '',
-                    '-v' if verbose else '')
+            command.source_def(def_content, piped, verbose)
         ])
+
+    def pysource_run(self, function_name, *args):
+        pass
+
+
+class WithDaemonTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(WithDaemonTestCase, self).setUp()
+        self.daemon_start(wait_for_started=True)
