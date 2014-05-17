@@ -18,12 +18,14 @@ from base import BaseTestCase
 
 class BashCompletionTest(BaseTestCase):
 
-    def completion(self, *args):
+    def assert_completion(self, expected, args=None):
+        args = args or []
+        args += ['']
         cmd = ['pysource'] + list(args)
         partial_word = cmd[-1]
         cmdline = ' '.join(cmd)
         reg_exp = r"s/.*-F \\([^ ]*\\) .*/\\1/"
-        return self.run_pysource_script([
+        completions = self.run_pysource_script([
             'export COMP_LINE={}'.format(cmdline),
             'export COMP_WORDS=({})'.format(cmdline),
             'export COMP_CWORD={}'.format(cmd.index(partial_word)),
@@ -31,23 +33,31 @@ class BashCompletionTest(BaseTestCase):
             '$(complete -p {} | sed "{}") && echo ${{COMPREPLY[*]}}'
             .format(cmd[0], reg_exp),
         ]).split(' ')
+        self.assertEqual(len(expected), len(completions))
+        for expected_completion in expected:
+            self.assertIn(expected_completion, completions)
 
     def test_pysource_completion(self):
-        completion = self.completion('')
-        self.assertIn('daemon', completion)
-        self.assertIn('list-registered', completion)
-        self.assertIn('update-env', completion)
-        self.assertIn('source-registered', completion)
-        self.assertIn('source-named', completion)
-        self.assertIn('source-def', completion)
-        self.assertIn('source-inline', completion)
-        self.assertIn('source', completion)
-        self.assertIn('run', completion)
-        self.assertIn('run-piped', completion)
+        self.assert_completion(
+            expected=[
+                'daemon',
+                'list-registered',
+                'update-env',
+                'source-registered',
+                'source-named',
+                'source-def',
+                'source-inline',
+                'source',
+                'run',
+                'run-piped'
+            ])
 
     def test_pysource_daemon_completion(self):
-        completion = self.completion('daemon', '')
-        self.assertIn('start', completion)
-        self.assertIn('stop', completion)
-        self.assertIn('restart', completion)
-        self.assertIn('status', completion)
+        self.assert_completion(
+            args=['daemon'],
+            expected=[
+                'start',
+                'stop',
+                'restart',
+                'status'
+            ])
