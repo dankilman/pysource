@@ -19,7 +19,7 @@ export PYSOURCE_PYTHON=${PYSOURCE_PYTHON="$(command \which python)"}
 pysource()
 {
     case "$1" in
-        daemon|list-registered|run|run-piped)
+        daemon|list-registered|run|run-piped|update-env)
             __pysource_main "$@"
             ;;
         source|source-registered|source-named|source-def|source-inline)
@@ -64,7 +64,7 @@ __pysource_complete()
     local cur prev pysource_opts daemon_opts
     cur=${COMP_WORDS[COMP_CWORD]}
     prev=${COMP_WORDS[COMP_CWORD-1]}
-    pysource_opts="daemon list-registered run run-piped source source-def source-inline source-named source-registered"
+    pysource_opts="daemon list-registered update-env run run-piped source source-def source-inline source-named source-registered"
 
     case "$prev" in
         daemon)

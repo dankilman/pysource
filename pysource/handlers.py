@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import os
+
 from pysource import request_context
 from pysource import registry
 from pysource import remote_call, piped_remote_call
@@ -41,3 +43,9 @@ def run_function(name, args):
 @piped_remote_call
 def run_piped_function(name, args):
     return registry.run_function(name, args)
+
+
+@remote_call
+def update_env(env):
+    os.environ.update(env)
+    return {'status': 'updated'}

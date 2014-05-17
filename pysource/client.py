@@ -35,6 +35,11 @@ def list_registered():
     return result['descriptors']
 
 
+def update_env():
+    result = handlers.update_env.remote(env=os.environ.copy())
+    return result['status']
+
+
 def source_registered(verbose=False):
     return shell.create_shell_functions(list_registered(),
                                         verbose=verbose)

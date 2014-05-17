@@ -65,6 +65,14 @@ def list_registered():
             yield '{}{}'.format(name, suffix)
 
 
+def update_env():
+    status = client.update_env()
+    if status == 'updated':
+        return 'Environment updated'
+    else:
+        raise pysource.error('Failed updating environment')
+
+
 def source_registered(verbose=False):
     return client.source_registered(verbose=verbose)
 
@@ -109,7 +117,8 @@ def main():
         source_registered,
         source_named,
         source_def,
-        source_inline
+        source_inline,
+        update_env
     ], completion=False, errors_file=errors)
     if errors.len > 0:
         sys.exit(errors.getvalue().strip())
