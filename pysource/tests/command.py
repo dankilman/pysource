@@ -21,11 +21,17 @@ def list_registered():
     return 'pysource list-registered'
 
 
+def source_def_explicit(def_content, piped=False, verbose=False):
+    return "pysource source-{}".format(source_def(def_content,
+                                                  piped,
+                                                  verbose))
+
+
 def source_def(def_content, piped=False, verbose=False):
-    return "pysource source-def '{}' {} {}" \
-           .format(def_content,
-                   '-p' if piped else '',
-                   '-v' if verbose else '')
+    return "def '{}' {} {}" \
+        .format(def_content,
+                '-p' if piped else '',
+                '-v' if verbose else '')
 
 
 def run_explicit(function_name, *args):

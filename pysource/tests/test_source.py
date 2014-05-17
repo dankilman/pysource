@@ -50,7 +50,13 @@ class SourceTest(WithDaemonTestCase):
     def test_source_verbose(self):
         output = self.run_pysource_script([
             command.source(self.valid_source_path, verbose=True)
-        ]).split('\n')
+        ])
+
+        self.assertIn('run function1', output)
+        self.assertIn('run function2', output)
+        self.assertIn('run-piped function3', output)
+
+        output = output.split('\n')
         self.assertIn('function1 function sourced.', output)
         self.assertIn('function2 function sourced.', output)
         self.assertIn('function3 function sourced.', output)
