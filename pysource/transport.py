@@ -206,12 +206,15 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
         self.done = False
 
     def p(self, message):
-        if DEBUG and ((DEBUG_CLIENT and not request_context.piped) or (DEBUG_SERVER and request_context.piped)):
+        if DEBUG and ((DEBUG_CLIENT and not request_context.piped) or
+                      (DEBUG_SERVER and request_context.piped)):
             prefix = '(SERVER_IN)' if request_context.piped else '(CLIENT_IN)'
-            print '{} {} (total_bytes={}, bytes_read={}, done={})'.format(prefix, message, self.total_bytes, self.bytes_read, self.done)
+            print '{} {} (total_bytes={}, bytes_read={}, done={})'.format(
+                prefix, message, self.total_bytes, self.bytes_read, self.done)
 
     def read(self, length=0, ensure_length=True):
-        self.p('read length={}, ensure_length={}'.format(length, ensure_length))
+        self.p('read length={}, ensure_length={}'.format(
+            length, ensure_length))
         if self.done:
             return None
         result = BytesIO()
@@ -240,7 +243,8 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
                     result.write(data)
                 except socket.error, e:
                     if e.errno == errno.EAGAIN:
-                        self.p('errno.EAGAIN ensure_length={}'.format(ensure_length))
+                        self.p('errno.EAGAIN ensure_length={}'.format(
+                            ensure_length))
                         if ensure_length:
                             pass
                         else:
@@ -253,11 +257,13 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
                 break
         if self.bytes_read == self.total_bytes:
             self.done = True
-        self.p('out done={}, bytes_read={}, total_bytes={}'.format(self.done, self.bytes_read, self.total_bytes))
+        self.p('out done={}, bytes_read={}, total_bytes={}'.format(
+            self.done, self.bytes_read, self.total_bytes))
         return result.getvalue()
 
     def close(self):
-        self.p('read_close done={}, bytes_read={}, total_bytes={}'.format(self.done, self.bytes_read, self.total_bytes))
+        self.p('read_close done={}, bytes_read={}, total_bytes={}'.format(
+            self.done, self.bytes_read, self.total_bytes))
         pass
 
 
@@ -271,8 +277,10 @@ class PipeControlledOutputSocket(PipeControlledBaseSocket):
         self.bytes_written = 0
 
     def p(self, message):
-        if DEBUG and ((DEBUG_CLIENT and not request_context.piped) or (DEBUG_SERVER and request_context.piped)):
-            prefix = '(SERVER_OUT)' if request_context.piped else '(CLIENT_OUT)'
+        if DEBUG and ((DEBUG_CLIENT and not request_context.piped) or
+                      (DEBUG_SERVER and request_context.piped)):
+            prefix = '(SERVER_OUT)' if request_context.piped else \
+                '(CLIENT_OUT)'
             print '{} {}'.format(prefix, message)
 
     def write(self, data):
