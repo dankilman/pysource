@@ -12,99 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-import tempfile
-import shutil
-from unittest import TestCase
-from os import path
-import sys
 
 import sh
 
-
-from pysource import config
 from pysource import daemonizer
 
-
-def bake(command):
-    return command.bake(_out=lambda line: sys.stdout.write(line),
-                        _err=lambda line: sys.stderr.write(line))
-bash = bake(sh.bash)
-pkill = bake(sh.pkill)
+from base import BaseTestClass
 
 
-class DaemonTest(TestCase):
-
-    def setUp(self):
-        workdir = tempfile.mkdtemp(suffix='', prefix='pysource-test-')
-        self.workdir = path.abspath(workdir)
-        config.pysource_dir = self.workdir
-        self.addCleanup(self.cleanup)
-
-    def tearDown(self):
-        pass
-
-    def _kill_daemon(self):
-        pkill('-9', 'pysource.main', f=True, _ok_code=[0, 1]).wait()
-
-    def cleanup(self):
-        self._kill_daemon()
-        shutil.rmtree(self.workdir)
-
-    def _run(self, commands, bg=False):
-        commands = list(commands)
-        script_path = self._create_script(commands)
-        if bg:
-            bash(script_path, _bg=bg)
-        else:
-            return sh.bash(script_path)
-
-    def _create_script(self, commands):
-        script_path = tempfile.mktemp(dir=self.workdir)
-        with open(script_path, 'w') as f:
-            export_command = 'export PYSOURCE_HOME={}'.format(self.workdir)
-            source_command = 'source $(which pysource.sh)'
-            commands = [export_command, source_command] + commands
-            script_content = '\n'.join(commands)
-            f.write(script_content)
-        return script_path
-
-    def _repetitive(self, func, timeout=5, interval=0.1):
-        end = time.time() + timeout
-        while True:
-            try:
-                return func()
-            except AssertionError:
-                if time.time() < end:
-                    time.sleep(interval)
-                else:
-                    raise
-
-    def wait_for_status(self, expected_status):
-        def run():
-            status, pid = daemonizer.status()
-            self.assertEqual(status, expected_status)
-        self._repetitive(run)
-
-    def _start_daemon(self):
-        self._run([
-            'pysource daemon start'
-        ], bg=True)
-
-    def _stop_daemon(self):
-        self._run([
-            'pysource daemon stop'
-        ], bg=True)
-
-    def _restart_daemon(self):
-        self._run([
-            'pysource daemon restart'
-        ], bg=True)
-
-    def _status_daemon(self):
-        return self._run([
-            'pysource daemon status'
-        ], bg=False)
+class DaemonTest(BaseTestClass):
 
     def test_start_not_running(self):
         self._start_daemon()
