@@ -42,6 +42,8 @@ class BaseTestCase(TestCase):
         self.workdir = path.abspath(workdir)
         config.pysource_dir = self.workdir
         self.addCleanup(self.cleanup)
+        self.valid_source_path = self.resource_path('functions.py')
+        self.error_source_path = self.resource_path('with_error.py')
 
     def tearDown(self):
         pass
@@ -121,6 +123,11 @@ class BaseTestCase(TestCase):
         return self.run_pysource_script([
             command.source_def(def_content, piped, verbose)
         ])
+
+    def resource_path(self, resource_name):
+        return path.abspath(path.join(path.dirname(__file__),
+                                      'resources',
+                                      resource_name))
 
 
 class WithDaemonTestCase(BaseTestCase):

@@ -62,3 +62,7 @@ def source(source_path, verbose=False):
 
 def source_explicit(source_path, verbose=False):
     return 'pysource source {} {}'.format(source_path, '-v' if verbose else '')
+
+
+def source_registered(verbose=False):
+    return 'pysource source-registered {}'.format('-v' if verbose else '')

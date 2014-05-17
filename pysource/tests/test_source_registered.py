@@ -19,49 +19,42 @@ from base import WithDaemonTestCase
 from pysource.tests import command
 
 
-class SourceTest(WithDaemonTestCase):
+class SourceRegisteredTest(WithDaemonTestCase):
 
-    def test_source_explicit(self):
+    def test_source_registered(self):
+        self.run_pysource_script([
+            command.source(self.valid_source_path),
+        ])
         output = self.run_pysource_script([
-            command.source_explicit(self.valid_source_path),
+            command.source_registered(),
             command.list_registered()
         ]).split('\n')
         self.assertIn('function1', output)
         self.assertIn('function2', output)
         self.assertIn('function3 (piped)', output)
         self.assertEqual('function1', self.run_pysource_script([
-            command.source_named('function1'),
+            command.source_registered(),
             command.run('function1')
         ]))
         self.assertEqual('function2', self.run_pysource_script([
-            command.source_named('function2'),
+            command.source_registered(),
             command.run('function2')
         ]))
 
-    def test_source(self):
-        output = self.run_pysource_script([
-            command.source(self.valid_source_path),
-            command.list_registered()
-        ]).split('\n')
-        self.assertIn('function1', output)
-        self.assertIn('function2', output)
-        self.assertIn('function3 (piped)', output)
-
     def test_source_verbose(self):
+        self.run_pysource_script([
+            command.source(self.valid_source_path),
+        ])
         output = self.run_pysource_script([
-            command.source(self.valid_source_path, verbose=True)
+            command.source_registered(verbose=True),
+            command.list_registered()
         ]).split('\n')
         self.assertIn('function1 function sourced.', output)
         self.assertIn('function2 function sourced.', output)
         self.assertIn('function3 function sourced.', output)
 
-    def test_source_with_errors(self):
-        self.assertRaises(sh.ErrorReturnCode,
-                          self.run_pysource_script,
-                          [command.source(self.error_source_path)])
-
     def test_source_no_daemon(self):
         self.daemon_stop(wait_for_stopped=True)
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
-                          [command.source(self.error_source_path)])
+                          [command.source_registered()])
