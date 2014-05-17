@@ -55,11 +55,11 @@ def source_path(file_path, verbose=False):
                           verbose=verbose)
 
 
-def source_def(def_content, verbose=False):
+def source_def(def_content, piped=False, verbose=False):
     content = StringIO()
     content.writelines([
         'import pysource\n',
-        '@pysource.function\n',
+        '@pysource.function(piped={})\n'.format(piped),
         'def {}'.format(def_content)])
     return source_content(content.getvalue(),
                           verbose=verbose)

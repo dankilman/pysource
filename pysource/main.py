@@ -71,8 +71,9 @@ def source_named(function_name, verbose=False):
                                verbose=verbose)
 
 
-def source_def(def_content, verbose=False):
+def source_def(def_content, piped=False, verbose=False):
     return client.source_def(def_content,
+                             piped=piped,
                              verbose=verbose)
 
 
