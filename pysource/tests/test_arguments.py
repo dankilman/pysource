@@ -48,9 +48,13 @@ class ArgumentsTest(TestCase):
     def test_validation_no_varargs(self):
         def fun(arg1):
             pass
+        # too few
         self.assertRaises(RuntimeError, ArgTypeSpec(fun).parse, [])
+        # too many
+        self.assertRaises(RuntimeError, ArgTypeSpec(fun).parse, [1, 2])
 
     def test_validation_with_varargs(self):
         def fun(arg1, *args):
             pass
+        # too few
         self.assertRaises(RuntimeError, ArgTypeSpec(fun).parse, [])
