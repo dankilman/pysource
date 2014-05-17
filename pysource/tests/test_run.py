@@ -95,6 +95,11 @@ class RunTest(WithDaemonTestCase):
                               command.run('function1')
                           ])
 
+    def test_run_no_function(self):
+        self.assertRaises(sh.ErrorReturnCode,
+                          self.run_pysource_script,
+                          [command.run('function1')])
+
     def test_run_no_daemon(self):
         self.daemon_stop(wait_for_stopped=True)
         self.assertRaises(sh.ErrorReturnCode,

@@ -122,9 +122,6 @@ class BaseTestCase(TestCase):
             command.source_def(def_content, piped, verbose)
         ])
 
-    def pysource_run(self, function_name, *args):
-        pass
-
 
 class WithDaemonTestCase(BaseTestCase):
 

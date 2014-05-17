@@ -50,6 +50,7 @@ __pysource_source()
         then
             echo "Sourcing:"
             printf "$output"
+            echo
         fi
         eval "$output"
         return 0

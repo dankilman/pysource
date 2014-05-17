@@ -54,3 +54,11 @@ def source_named(function_name, piped=False, verbose=False):
         function_name,
         '-p' if piped else '',
         '-v' if verbose else '')
+
+
+def source(source_path, verbose=False):
+    return 'pysource {} {}'.format(source_path, '-v' if verbose else '')
+
+
+def source_explicit(source_path, verbose=False):
+    return 'pysource source {} {}'.format(source_path, '-v' if verbose else '')
