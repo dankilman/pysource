@@ -44,14 +44,14 @@ class BaseTestClass(TestCase):
     def tearDown(self):
         pass
 
-    def _kill_daemon(self):
+    def kill_daemon(self):
         pkill('-9', 'pysource.main', f=True, _ok_code=[0, 1]).wait()
 
     def cleanup(self):
-        self._kill_daemon()
+        self.kill_daemon()
         shutil.rmtree(self.workdir)
 
-    def _run(self, commands, bg=False):
+    def run_pysource_script(self, commands, bg=False):
         commands = list(commands)
         script_path = self._create_script(commands)
         if bg:
@@ -86,22 +86,22 @@ class BaseTestClass(TestCase):
             self.assertEqual(status, expected_status)
         self._repetitive(run)
 
-    def _start_daemon(self):
-        self._run([
+    def start_daemon(self):
+        self.run_pysource_script([
             'pysource daemon start'
         ], bg=True)
 
-    def _stop_daemon(self):
-        self._run([
+    def stop_daemon(self):
+        self.run_pysource_script([
             'pysource daemon stop'
         ], bg=True)
 
-    def _restart_daemon(self):
-        self._run([
+    def restart_daemon(self):
+        self.run_pysource_script([
             'pysource daemon restart'
         ], bg=True)
 
-    def _status_daemon(self):
-        return self._run([
+    def status_daemon(self):
+        return self.run_pysource_script([
             'pysource daemon status'
         ], bg=False)
