@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+import os
 import functools
 import threading
 import argh
@@ -77,6 +77,13 @@ class RequestContextIn(object):
     def read(length=0):
         return request_context.stdin.read(length)
 stdin = RequestContextIn()
+
+
+class SugaredEnviron(os._Environ):
+
+    def __getattr__(self, item):
+        return self.get(item)
+env = SugaredEnviron(os.environ.data)
 
 
 def function(func=None, piped=False):
