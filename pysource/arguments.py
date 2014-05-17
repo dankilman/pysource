@@ -29,7 +29,6 @@ class ArgTypeSpec(object):
         self.types = defaults
         self.len_types = len(self.types)
         self.has_varargs = spec.varargs is not None
-        self.has_kwargs = spec.keywords is not None
 
     def parse(self, args):
         len_args = len(args)
