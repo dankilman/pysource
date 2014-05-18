@@ -10,9 +10,8 @@ TODO
 Installation
 ---
 
-When (and if) this package will be not as half-baked as it is now, I will probably push it to PyPI.
 ```bash
-pip install https://github.com/dankilman/pysource/archive/master.tar.gz
+pip install pysource
 ```
 
 The following should probably be placed in `.bashrc` or something similar.
