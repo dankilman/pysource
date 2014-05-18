@@ -15,6 +15,8 @@
 
 from argh.utils import get_arg_spec
 
+_nop = lambda arg: arg
+
 
 class ArgTypeSpec(object):
 
@@ -24,14 +26,13 @@ class ArgTypeSpec(object):
         args_len = len(spec.args)
         defaults = spec.defaults or []
         if len(defaults) < args_len:
-            prefix = [str for _ in range(args_len - len(defaults))]
+            prefix = [_nop for _ in range(args_len - len(defaults))]
             defaults = prefix + list(defaults)
         self.types = defaults
         self.len_types = len(self.types)
         self.has_varargs = spec.varargs is not None
 
     def parse(self, args):
-        args = [str(arg) for arg in args]
         len_args = len(args)
         if not self.has_varargs and len_args != self.len_types:
             raise RuntimeError(

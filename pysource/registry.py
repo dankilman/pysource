@@ -29,8 +29,10 @@ class FunctionHolder(object):
         self.piped = piped
 
     def run(self, args):
+        args = [str(arg) for arg in args]
         parsed_args = self.type_spec.parse(args)
-        return self.wrapper(*parsed_args)
+        result = self.wrapper(*parsed_args)
+        return str(result) if result is not None else ''
 
     def to_dict(self):
         return {
@@ -57,10 +59,7 @@ def run_function(function_name, args):
     if not holder.piped and request_context.piped:
         raise RuntimeError('{0} is a regular function but was called as a '
                            'piped function'.format(function_name))
-    result = holder.run(args)
-    if result is None:
-        result = ''
-    return str(result)
+    return holder.run(args)
 
 
 def get_registered():
