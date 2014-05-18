@@ -24,7 +24,7 @@ class UpdateEnvTest(WithDaemonTestCase):
             command.source_inline('from pysource import env as e'),
             command.source_def('function1(): return e.NEW_ENV'),
             command.run('function1')])
-        self.assertEqual(output, str(None))
+        self.assertEqual(output, '')
         new_env_value = 'NEW_ENV_VALUE'
         output = self.run_pysource_script([
             command.update_env(NEW_ENV=new_env_value),

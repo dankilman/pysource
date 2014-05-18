@@ -35,4 +35,4 @@ age=13
             command.source_def('function1(): return name,age'),
             command.run('function1')
         ])
-        self.assertEqual(output, str([u"John Doe", 13]))
+        self.assertEqual(output, str(("John Doe", 13)))
