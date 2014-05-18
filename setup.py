@@ -28,6 +28,8 @@ setup(
         'argh',
         'python-daemon'
     ],
+    keywords='bash shell source function',
+    url='https://github.com/dankilman/pysource',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
