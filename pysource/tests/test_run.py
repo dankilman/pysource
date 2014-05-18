@@ -37,6 +37,14 @@ class RunTest(WithDaemonTestCase):
         ])
         self.assertEqual(output, '1')
 
+    def test_run_no_return_value(self):
+        output = self.run_pysource_script([
+            command.source_def('function1(): pass',
+                               piped=self.piped),
+            command.run('function1')
+        ], strip=False)
+        self.assertEqual(output, '')
+
     def test_run_with_args(self):
         name = 'john'
         output = self.run_pysource_script([

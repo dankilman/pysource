@@ -56,7 +56,7 @@ class BaseTestCase(TestCase):
         self.kill_daemon()
         shutil.rmtree(self.workdir)
 
-    def run_pysource_script(self, commands=(), bg=False, env=None):
+    def run_pysource_script(self, commands=(), bg=False, env=None, strip=True):
         commands = list(commands)
         script_path = self._create_script(commands)
         if env is None:
@@ -65,7 +65,10 @@ class BaseTestCase(TestCase):
         if bg:
             bash(script_path, _bg=bg, _env=env)
         else:
-            return sh.bash(script_path, _env=env).strip()
+            output = sh.bash(script_path, _env=env)
+            if strip:
+                output = output.strip()
+            return output
 
     def _create_script(self, commands):
         script_path = tempfile.mktemp(prefix='pysource-', dir=self.workdir)
