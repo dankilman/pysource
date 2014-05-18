@@ -13,9 +13,6 @@
 # limitations under the License.
 
 
-import sh
-
-
 from base import WithDaemonTestCase
 
 
@@ -31,8 +28,3 @@ class ListRegisteredTest(WithDaemonTestCase):
         output = self.list_registered().split('\n')
         self.assertIn('function1', output)
         self.assertIn('function2 (piped)', output)
-
-    def test_no_daemon(self):
-        self.daemon_stop(wait_for_stopped=True)
-        self.assertRaises(sh.ErrorReturnCode,
-                          self.list_registered)

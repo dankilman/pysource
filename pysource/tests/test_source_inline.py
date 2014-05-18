@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-import sh
-
 from base import WithDaemonTestCase
 from pysource.tests import command
 
@@ -38,9 +36,3 @@ age=13
             command.run('function1')
         ])
         self.assertEqual(output, str([u"John Doe", 13]))
-
-    def test_source_inline_no_daemon(self):
-        self.daemon_stop(wait_for_stopped=True)
-        self.assertRaises(sh.ErrorReturnCode,
-                          self.run_pysource_script,
-                          [command.source_inline('1')])

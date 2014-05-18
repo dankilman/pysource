@@ -20,6 +20,7 @@ import argh
 import pysource
 from pysource import daemonizer
 from pysource import client
+from pysource import config
 
 
 def daemon(action):
@@ -40,10 +41,17 @@ def daemon(action):
         if status == daemonizer.STATUS_STOPPED:
             return 'Daemon is (probably) stopped'
         elif status == daemonizer.STATUS_CORRUPTED:
-            return 'Daemon pidfile exists but process does not seem ' \
-                   'to be running (pid: {0}). You should probably clean ' \
-                   'the files in ~/.pysource and manually check if there is' \
-                   ' a daemon running somewhere'.format(pid)
+            if pid:
+                return 'Daemon pidfile exists but process does not seem ' \
+                       'to be running (pid: {0}). You should probably clean ' \
+                       'the files in {1} and manually check if there' \
+                       ' is a daemon running somewhere'\
+                       .format(pid, config.pysource_dir)
+            else:
+                return 'Daemon seems to be in an unstable state. Manually ' \
+                       'remove the files in {0} and kill leftover daemon ' \
+                       'processes (if there are any)'\
+                       .format(config.pysource_dir)
         else:
             return 'Daemon is (probably) running (pid: {0})'.format(pid)
     else:

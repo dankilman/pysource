@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-import sh
-
 from base import WithDaemonTestCase
 from pysource.tests import command
 
@@ -66,9 +64,3 @@ class SourceDefTest(WithDaemonTestCase):
                                piped=True),
         ])
         self.assertIn('run-piped function1', output)
-
-    def test_source_def_no_daemon(self):
-        self.daemon_stop(wait_for_stopped=True)
-        self.assertRaises(sh.ErrorReturnCode,
-                          self.run_pysource_script,
-                          [command.source_def('function1(): pass')])

@@ -13,9 +13,6 @@
 # limitations under the License.
 
 
-import sh
-
-
 from base import WithDaemonTestCase
 from pysource.tests import command
 
@@ -39,9 +36,3 @@ class UpdateEnvTest(WithDaemonTestCase):
         output = self.run_pysource_script([
             command.update_env(verbose=True)])
         self.assertEqual(output, 'Environment updated')
-
-    def test_update_env_no_daemon(self):
-        self.daemon_stop(wait_for_stopped=True)
-        self.assertRaises(sh.ErrorReturnCode,
-                          self.run_pysource_script,
-                          [command.update_env()])

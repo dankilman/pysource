@@ -70,9 +70,3 @@ class SourceTest(WithDaemonTestCase):
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
                           [command.source(self.valid_source_path + '_')])
-
-    def test_source_no_daemon(self):
-        self.daemon_stop(wait_for_stopped=True)
-        self.assertRaises(sh.ErrorReturnCode,
-                          self.run_pysource_script,
-                          [command.source(self.error_source_path)])

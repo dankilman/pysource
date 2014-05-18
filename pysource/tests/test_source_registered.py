@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-import sh
-
 from base import WithDaemonTestCase
 from pysource.tests import command
 
@@ -41,7 +39,7 @@ class SourceRegisteredTest(WithDaemonTestCase):
             command.run('function2')
         ]))
 
-    def test_source_verbose(self):
+    def test_source_registered_verbose(self):
         self.run_pysource_script([
             command.source(self.valid_source_path),
         ])
@@ -52,9 +50,3 @@ class SourceRegisteredTest(WithDaemonTestCase):
         self.assertIn('function1 function sourced.', output)
         self.assertIn('function2 function sourced.', output)
         self.assertIn('function3 function sourced.', output)
-
-    def test_source_no_daemon(self):
-        self.daemon_stop(wait_for_stopped=True)
-        self.assertRaises(sh.ErrorReturnCode,
-                          self.run_pysource_script,
-                          [command.source_registered()])

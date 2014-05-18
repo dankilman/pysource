@@ -80,6 +80,11 @@ def status():
     pid = None
     if _pidfile().is_locked():
         pid = _read_pid()
+        if pid is None:
+            if _pidfile().is_locked():
+                return STATUS_CORRUPTED, pid
+            else:
+                return STATUS_STOPPED, pid
         stat = STATUS_RUNNING if _process_is_running(pid) else STATUS_CORRUPTED
     return stat, pid
 
@@ -90,8 +95,14 @@ def _write_pid():
 
 
 def _read_pid():
-    with open(_pidfile().lock_file, 'r') as f:
-        return int(f.read())
+    try:
+        with open(_pidfile().lock_file, 'r') as f:
+            return int(f.read())
+    except IOError, e:
+        if e.errno == errno.ENOENT:
+            return None
+        else:
+            raise
 
 
 def _make_pysource_dir():

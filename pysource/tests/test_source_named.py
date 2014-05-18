@@ -52,9 +52,5 @@ class SourceNamedTest(WithDaemonTestCase):
             command.source_named('function1',
                                  verbose=True,
                                  piped=True),
-            ])
+        ])
         self.assertIn('run-piped function1', output)
-
-    def test_source_def_no_daemon(self):
-        self.daemon_stop(wait_for_stopped=True)
-        self.test_source_named_verbose()
