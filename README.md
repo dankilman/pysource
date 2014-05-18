@@ -1,7 +1,7 @@
-pysource
+pysource [![Build Status](https://travis-ci.org/dankilman/pysource.svg?branch=master)](https://travis-ci.org/dankilman/pysource)
 ===
 
-Execute python from bash scripts (sort of).
+"source" and run python functions in bash
 
 Example:
 TODO
