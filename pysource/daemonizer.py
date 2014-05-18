@@ -28,6 +28,8 @@ STATUS_STOPPED = 'stopped'
 STATUS_RUNNING = 'running'
 STATUS_CORRUPTED = 'corrupted'
 
+READ_PID_RETRY = -1
+
 _pidfile_dir = lambda: config.pysource_dir
 _pidfile_path = lambda: os.path.join(_pidfile_dir(), 'pidfile')
 _pidfile = lambda: lockfile.FileLock(_pidfile_path())
@@ -85,6 +87,9 @@ def status():
                 return STATUS_CORRUPTED, pid
             else:
                 return STATUS_STOPPED, pid
+        if pid == READ_PID_RETRY:
+            time.sleep(0.1)
+            pid = _read_pid()
         stat = STATUS_RUNNING if _process_is_running(pid) else STATUS_CORRUPTED
     return stat, pid
 
@@ -103,6 +108,11 @@ def _read_pid():
             return None
         else:
             raise
+    except ValueError:
+        # it might be that status was called before the pid was actually
+        # written to the file, so we'll return -1 to denote a retry
+        # is in order
+        return READ_PID_RETRY
 
 
 def _make_pysource_dir():
