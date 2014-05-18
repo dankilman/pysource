@@ -31,6 +31,7 @@ class ArgTypeSpec(object):
         self.has_varargs = spec.varargs is not None
 
     def parse(self, args):
+        args = [str(arg) for arg in args]
         len_args = len(args)
         if not self.has_varargs and len_args != self.len_types:
             raise RuntimeError(

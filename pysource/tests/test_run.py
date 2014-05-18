@@ -22,16 +22,17 @@ from pysource.tests import command
 
 class RunTest(WithDaemonTestCase):
 
+    def setUp(self):
+        super(RunTest, self).setUp()
+        self.piped = False
+
     def test_run_explicit(self):
-        output = self.run_pysource_script([
-            command.source_def('function1(): return 1'),
-            command.run_explicit('function1')
-        ])
-        self.assertEqual(output, '1')
+        self._test_run_explicit(self._run_explicit_command(self.piped))
 
     def test_run_no_args(self):
         output = self.run_pysource_script([
-            command.source_def('function1(): return 1'),
+            command.source_def('function1(): return 1',
+                               piped=self.piped),
             command.run('function1')
         ])
         self.assertEqual(output, '1')
@@ -39,7 +40,8 @@ class RunTest(WithDaemonTestCase):
     def test_run_with_args(self):
         name = 'john'
         output = self.run_pysource_script([
-            command.source_def('function1(name): return name*2'),
+            command.source_def('function1(name): return name*2',
+                               piped=self.piped),
             command.run('function1', name)
         ])
         self.assertEqual(output, name*2)
@@ -47,33 +49,36 @@ class RunTest(WithDaemonTestCase):
     def test_run_with_typed_args(self):
         number = 3
         output = self.run_pysource_script([
-            command.source_def('function1(number=int): return number**3'),
+            command.source_def('function1(number=int): return number**3',
+                               piped=self.piped),
             command.run('function1', number)
         ])
         self.assertEqual(output, str(number**3))
 
     def test_run_with_varargs(self):
-        names = [u'john', u'doe']
+        names = ['john', 'doe']
         output = self.run_pysource_script([
-            command.source_def('function1(*names): return list(names+names)'),
+            command.source_def('function1(*names): return list(names+names)',
+                               piped=self.piped),
             command.run('function1', *names)
         ])
         self.assertEqual(output, str(names+names))
 
     def test_run_with_kwargs(self):
         output = self.run_pysource_script([
-            command.source_def('function1(**kwargs): return 1'),
+            command.source_def('function1(**kwargs): return 1',
+                               piped=self.piped),
             command.run('function1')
         ])
         self.assertEqual(output, '1')
 
     def test_run_with_args_and_varargs(self):
-        name = u'jane'
-        names = [u'john', u'doe']
+        name = 'jane'
+        names = ['john', 'doe']
         args = [name] + names
         output = self.run_pysource_script([
             command.source_def('''function1(name, *names):
-    return [name]+list(names)'''),
+    return [name]+list(names)''', piped=self.piped),
             command.run('function1', *args)
         ])
         self.assertEqual(output, str(args))
@@ -82,7 +87,8 @@ class RunTest(WithDaemonTestCase):
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
                           [
-                              command.source_def('function1(): pass'),
+                              command.source_def('function1(): pass',
+                                                 piped=self.piped),
                               command.run('function1', 'arg')
                           ])
 
@@ -90,7 +96,8 @@ class RunTest(WithDaemonTestCase):
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
                           [
-                              command.source_def('function1(arg): pass'),
+                              command.source_def('function1(arg): pass',
+                                                 piped=self.piped),
                               command.run('function1')
                           ])
 
@@ -98,11 +105,33 @@ class RunTest(WithDaemonTestCase):
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
                           [
-                              command.source_def('function1(ar, *args): pass'),
+                              command.source_def('function1(ar, *args): pass',
+                                                 piped=self.piped),
                               command.run('function1')
                           ])
 
     def test_run_no_function(self):
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
-                          [command.run('function1')])
+                          [command.source_named('function1',
+                                                piped=self.piped),
+                           command.run('function1')])
+
+    def test_run_with_run_piped_mode(self):
+        self.assertRaises(sh.ErrorReturnCode,
+                          self._test_run_explicit,
+                          self._run_explicit_command(not self.piped))
+
+    def _test_run_explicit(self, run_explicit_command):
+        output = self.run_pysource_script([
+            command.source_def('function1(): return 1',
+                               piped=self.piped),
+            run_explicit_command('function1')
+        ])
+        self.assertEqual(output, '1')
+
+    def _run_explicit_command(self, piped):
+        if piped:
+            return command.run_piped_explicit
+        else:
+            return command.run_explicit

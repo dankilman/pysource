@@ -57,7 +57,10 @@ def run_function(function_name, args):
     if not holder.piped and request_context.piped:
         raise RuntimeError('{0} is a regular function but was called as a '
                            'piped function'.format(function_name))
-    return holder.run(args)
+    result = holder.run(args)
+    if result is None:
+        result = ''
+    return str(result)
 
 
 def get_registered():

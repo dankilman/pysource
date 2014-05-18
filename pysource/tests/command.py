@@ -38,6 +38,10 @@ def run_explicit(function_name, *args):
     return 'pysource run {}'.format(run(function_name, *args))
 
 
+def run_piped_explicit(function_name, *args):
+    return 'pysource run-piped {}'.format(run(function_name, *args))
+
+
 def run(function_name, *args):
     args = [str(arg) for arg in args]
     return '{} {}'.format(function_name, ' '.join(args))

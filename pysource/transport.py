@@ -111,8 +111,8 @@ class RequestHandler(StreamRequestHandler):
             request_context.stdin = piped_input
             request_context.stdout = piped_output
             result = _handle(**body)
-            if result:
-                piped_output.write(str(result))
+            if result is not None:
+                piped_output.write(result)
             piped_input.close()
             piped_output.close()
         finally:
