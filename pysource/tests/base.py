@@ -19,6 +19,7 @@ from os import path
 import sys
 import shutil
 import time
+import os
 
 import sh
 
@@ -55,20 +56,22 @@ class BaseTestCase(TestCase):
         self.kill_daemon()
         shutil.rmtree(self.workdir)
 
-    def run_pysource_script(self, commands, bg=False):
+    def run_pysource_script(self, commands=(), bg=False, env=None):
         commands = list(commands)
         script_path = self._create_script(commands)
+        if env is None:
+            env = os.environ.copy()
+        env['PYSOURCE_HOME'] = self.workdir
         if bg:
-            bash(script_path, _bg=bg)
+            bash(script_path, _bg=bg, _env=env)
         else:
-            return sh.bash(script_path).strip()
+            return sh.bash(script_path, _env=env).strip()
 
     def _create_script(self, commands):
         script_path = tempfile.mktemp(prefix='pysource-', dir=self.workdir)
         with open(script_path, 'w') as f:
-            export_command = 'export PYSOURCE_HOME={}'.format(self.workdir)
             source_command = 'source $(which pysource.sh)'
-            commands = [export_command, source_command] + commands
+            commands = [source_command] + commands
             script_content = '\n'.join(commands)
             f.write(script_content)
         return script_path
