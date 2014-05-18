@@ -79,4 +79,4 @@ __pysource_complete()
 
     COMPREPLY=( $( compgen -W "${pysource_opts}" -- $cur ) )
 }
-complete -F __pysource_complete pysource
+complete -o default -F __pysource_complete pysource
