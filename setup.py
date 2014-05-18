@@ -32,13 +32,13 @@ setup(
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators'
+        'Intended Audience :: System Administrators',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 2 :: Only',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Unix Shell',
-        'Topic :: Software Development ::'
+        'Topic :: Software Development',
         'Topic :: System :: Shells',
         'Topic :: System :: System Shells',
         'Topic :: Utilities',
