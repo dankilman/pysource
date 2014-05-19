@@ -232,7 +232,7 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
             readable, _, _ = select.select(self.read_sockets, [], [], 0.5)
             if self.control_socket in readable:
                 self.read_sockets = [self.data_socket]
-                total_bytes = self._consume_control()
+                total_bytes = self.consume_control()
                 if total_bytes == -1:  # error
                     self.total_bytes = self.bytes_read
                     break
