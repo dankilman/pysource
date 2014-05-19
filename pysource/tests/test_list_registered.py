@@ -14,17 +14,21 @@
 
 
 from base import WithDaemonTestCase
+from pysource.tests import command
 
 
 class ListRegisteredTest(WithDaemonTestCase):
 
     def test_list_empty(self):
-        self.assertEqual(self.list_registered(),
+        output = self.run_pysource_script([command.list_registered()])
+        self.assertEqual(output,
                          'No functions registered')
 
     def test_list_full(self):
-        self.source_def('function1(): pass')
-        self.source_def('function2(): pass', piped=True)
-        output = self.list_registered().split('\n')
+        output = self.run_pysource_script([
+            command.source_def('function1(): pass'),
+            command.source_def('function2(): pass', piped=True),
+            command.list_registered()
+        ]).split('\n')
         self.assertIn('function1', output)
         self.assertIn('function2 (piped)', output)

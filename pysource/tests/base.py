@@ -22,6 +22,7 @@ import time
 import os
 
 import sh
+sh.ErrorReturnCode.truncate_cap = 2 ** 32
 
 from pysource import config
 from pysource import daemonizer
@@ -45,6 +46,7 @@ class BaseTestCase(TestCase):
         self.addCleanup(self.cleanup)
         self.valid_source_path = self.resource_path('functions.py')
         self.error_source_path = self.resource_path('with_error.py')
+        self.pipes_source_path = self.resource_path('pipes.py')
 
     def tearDown(self):
         pass
@@ -56,16 +58,31 @@ class BaseTestCase(TestCase):
         self.kill_daemon()
         shutil.rmtree(self.workdir)
 
-    def run_pysource_script(self, commands=(), bg=False, env=None, strip=True):
+    def run_pysource_script(
+            self,
+            commands=(),
+            bg=False,
+            env=None,
+            strip=True,
+            _in=None,
+            _out=None):
         commands = list(commands)
         script_path = self._create_script(commands)
         if env is None:
             env = os.environ.copy()
         env['PYSOURCE_HOME'] = self.workdir
+        conf = {'_env': env}
+        if _in is not None:
+            conf['_in'] = _in
+            conf['_in_bufsize'] = 0
+        if _out is not None:
+            conf['_out'] = _out
+            conf['_out_bufsize'] = 0
         if bg:
-            bash(script_path, _bg=bg, _env=env)
+            conf['_bg'] = True
+            bash(script_path, **conf)
         else:
-            output = sh.bash(script_path, _env=env)
+            output = sh.bash(script_path, **conf).wait()
             if strip:
                 output = output.strip()
             return output
@@ -121,16 +138,6 @@ class BaseTestCase(TestCase):
         return self.run_pysource_script([
             command.daemon('status')
         ], bg=False)
-
-    def list_registered(self):
-        return self.run_pysource_script([
-            command.list_registered()
-        ])
-
-    def source_def(self, def_content, piped=False, verbose=False):
-        return self.run_pysource_script([
-            command.source_def(def_content, piped, verbose)
-        ])
 
     def resource_path(self, resource_name):
         return path.abspath(path.join(path.dirname(__file__),
