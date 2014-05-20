@@ -53,4 +53,3 @@ class PipingTest(WithDaemonTestCase):
 
         print self.piped([command.run('py_echo')],
                          _in=_in(), _out=_out)
-
