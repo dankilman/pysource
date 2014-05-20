@@ -16,7 +16,7 @@ from setuptools import setup
 
 setup(
     name='pysource',
-    version='0.1.5',
+    version='0.1.6',
     author='Dan Kilman',
     author_email='dankilman@gmail.com',
     license='Apache License, Version 2.0',
@@ -35,6 +35,7 @@ setup(
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
+        'Intended Audience :: Information Technology',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 2 :: Only',
