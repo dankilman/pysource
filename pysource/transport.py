@@ -145,7 +145,7 @@ class PipeControlSocketHandler(object):
 
     def connect(self):
         self.server = False
-        retries = 3
+        retries = 20
         current_tries = 0
         while True:
             try:
