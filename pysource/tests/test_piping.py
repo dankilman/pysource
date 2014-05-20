@@ -61,7 +61,7 @@ class PipingTest(WithDaemonTestCase):
         import time
 
         pipes = 1
-        iterations = 100
+        # iterations = 100
 
         def _in():
             return open('/home/dan/down/book.txt')
