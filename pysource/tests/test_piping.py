@@ -34,11 +34,11 @@ class PipingTest(WithDaemonTestCase):
                                         _in=_in,
                                         _out=_out)
 
-    def test(self):
+    def _test(self):
         import time
 
         def _in():
-            for i in range(1, 4):
+            for i in range(1, 10):
                 yield str(i)
                 time.sleep(1)
 

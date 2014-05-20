@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import fcntl
 import sys
 import time
 import uuid
@@ -229,7 +230,8 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
             self.p('loop')
             if self.bytes_read == self.total_bytes:
                 break
-            readable, _, _ = select.select(self.read_sockets, [], [], 0.5)
+            timeout = 30 if ensure_length else 0.5
+            readable, _, _ = select.select(self.read_sockets, [], [], timeout)
             if self.control_socket in readable:
                 self.read_sockets = [self.data_socket]
                 total_bytes = self.consume_control()
@@ -364,26 +366,27 @@ def do_piped_client_request(req_type, payload):
                 pipe_control_handler.rfile,
                 pipe_control_handler.conn)
 
+            stdin_fd = sys.stdin.fileno()
             stdin_buf = 16 * 1024
-            stdin = sys.stdin
-            stdin_done = not _stdin_readable()
+            fl = fcntl.fcntl(stdin_fd, fcntl.F_GETFL)
+            fcntl.fcntl(stdin_fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 
             data_sock = sock
             data_sock_buf = 1024
             control_soc = pipe_control_handler.conn
-            read_sockets = [data_sock, control_soc]
             control_soc_written = False
 
+            read_sockets = [stdin_fd, data_sock, control_soc]
+
             while True:
-                if not stdin_done:
-                    stdin_read = stdin.read(stdin_buf)
+                readable = select.select(read_sockets, [], [], 30)[0]
+                if stdin_fd in readable:
+                    stdin_read = os.read(stdin_fd, stdin_buf)
                     if stdin_read == '':
                         piped_output.close()
-                        stdin_done = True
+                        read_sockets = [data_sock, control_soc]
                     elif stdin_read is not None:
                         piped_output.write(stdin_read)
-
-                readable = select.select(read_sockets, [], [], 0.01)[0]
                 if control_soc in readable:
                     control_soc_written = True
                 if data_sock in readable:
@@ -468,10 +471,6 @@ def _write_body(sock, body):
     sock.write(json_body_len)
     sock.write('\r\n')
     sock.write(json_body)
-
-
-def _stdin_readable():
-    return sys.stdin in select.select([sys.stdin], [], [], 0)[0]
 
 
 def start_server():
