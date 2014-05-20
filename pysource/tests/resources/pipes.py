@@ -18,11 +18,20 @@ import time
 
 
 from pysource import function, stdin, stdout
+import json
+
+buffer_size = 10
 
 
 @function(piped=True)
 def py_echo():
-    b = stdin.read(1)
+    b = stdin.read(buffer_size)
     while b:
         stdout.write(b)
-        b = stdin.read(1)
+        b = stdin.read(buffer_size)
+
+
+@function(piped=True)
+def handle():
+    data = json.loads(stdin.read())
+    return data['some_key']

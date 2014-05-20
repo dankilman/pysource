@@ -321,7 +321,7 @@ class PipeControlledOutputSocket(PipeControlledBaseSocket):
         while True:
             if total_sent == total_bytes_to_write:
                 break
-            _, writable, _ = select.select([], [self.data_socket], [], 0.5)
+            _, writable, _ = select.select([], [self.data_socket], [], 30)
             if self.data_socket in writable:
                 sent = self.data_socket.send(view[total_sent:])
                 total_sent += sent

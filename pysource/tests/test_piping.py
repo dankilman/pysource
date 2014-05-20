@@ -34,13 +34,16 @@ class PipingTest(WithDaemonTestCase):
                                         _in=_in,
                                         _out=_out)
 
-    def _test(self):
+    def _test1(self):
         import time
 
+        pipes = 100
+        iterations = 100
+
         def _in():
-            for i in range(1, 10):
-                yield str(i)
-                time.sleep(1)
+            for i in range(1, iterations):
+                yield str(i)[-1]
+                time.sleep(0.1)
 
         global timestamp
         timestamp = time.time()
@@ -51,5 +54,23 @@ class PipingTest(WithDaemonTestCase):
             timestamp = time.time()
             stdout.write('{}: {}\n'.format(b, timestamp-prev))
 
-        print self.piped([command.run('py_echo')],
-                         _in=_in(), _out=_out)
+        self.piped([command.run('py_echo') for _ in range(pipes)],
+                   _in=_in(), _out=_out)
+
+    def _test2(self):
+        import time
+
+        pipes = 1
+        iterations = 100
+
+        def _in():
+            return open('/home/dan/down/book.txt')
+
+        def _out(b):
+            stdout.write(b)
+
+        global timestamp
+        timestamp = time.time()
+
+        self.piped([command.run('cat') for _ in range(pipes)],
+                   _in=_in(), _out=_out)
