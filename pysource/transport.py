@@ -220,9 +220,9 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
             print '{} {} (total_bytes={}, bytes_read={}, done={})'.format(
                 prefix, message, self.total_bytes, self.bytes_read, self.done)
 
-    def read(self, length=0, ensure_length=True):
-        self.p('read length={}, ensure_length={}'.format(
-            length, ensure_length))
+    def read(self, length=0, blocking=True):
+        self.p('read length={}, blocking={}'.format(
+            length, blocking))
         if self.done:
             return ''
         result = BytesIO()
@@ -230,7 +230,7 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
             self.p('loop')
             if self.bytes_read == self.total_bytes:
                 break
-            timeout = 30 if ensure_length else 0.5
+            timeout = 30 if blocking else 0
             readable, _, _ = select.select(self.read_sockets, [], [], timeout)
             if self.control_socket in readable:
                 self.read_sockets = [self.data_socket]
@@ -252,9 +252,9 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
                     result.write(data)
                 except socket.error, e:
                     if e.errno == errno.EAGAIN:
-                        self.p('errno.EAGAIN ensure_length={}'.format(
-                            ensure_length))
-                        if ensure_length:
+                        self.p('errno.EAGAIN blocking={}'.format(
+                            blocking))
+                        if blocking:
                             pass
                         else:
                             break
@@ -262,7 +262,7 @@ class PipeControlledInputSocket(PipeControlledBaseSocket):
                         raise
                 if 0 < length == result.tell():
                     break
-            if len(readable) == 0 and not ensure_length:
+            if len(readable) == 0 and not blocking:
                 break
         if self.bytes_read == self.total_bytes:
             self.done = True
@@ -394,7 +394,7 @@ def do_piped_client_request(req_type, payload):
                         buf = piped_input.read()
                     else:
                         buf = piped_input.read(data_sock_buf,
-                                               ensure_length=False)
+                                               blocking=False)
                     if buf is '':
                         break
                     elif buf is not None:

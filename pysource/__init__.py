@@ -74,8 +74,8 @@ stdout = RequestContextOut()
 class RequestContextIn(object):
 
     @staticmethod
-    def read(length=0):
-        return request_context.stdin.read(length)
+    def read(length=0, blocking=True):
+        return request_context.stdin.read(length, blocking)
 stdin = RequestContextIn()
 
 
