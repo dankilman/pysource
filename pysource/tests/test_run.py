@@ -91,6 +91,14 @@ class RunTest(WithDaemonTestCase):
         ])
         self.assertEqual(output, str(args))
 
+    def test_run_raises_exception(self):
+        self.assertRaises(
+            sh.ErrorReturnCode,
+            self.run_pysource_script,
+            [command.source_def('function1(): raise RuntimeError()',
+                                piped=self.piped),
+             command.run('function1')])
+
     def test_run_too_many_args_no_varargs(self):
         self.assertRaises(sh.ErrorReturnCode,
                           self.run_pysource_script,
