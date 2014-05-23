@@ -67,6 +67,8 @@ class RequestContextOut(object):
 
     @staticmethod
     def write(data):
+        if request_context.stdout is None:
+            raise RuntimeError('Not running within a piped request context')
         request_context.stdout.write(data)
 stdout = RequestContextOut()
 
@@ -75,6 +77,8 @@ class RequestContextIn(object):
 
     @staticmethod
     def read(length=0, blocking=True):
+        if request_context.stdin is None:
+            raise RuntimeError('Not running within a piped request context')
         return request_context.stdin.read(length, blocking)
 stdin = RequestContextIn()
 
