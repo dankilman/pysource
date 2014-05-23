@@ -138,6 +138,22 @@ class RunTest(WithDaemonTestCase):
                           self._test_run_explicit,
                           self._run_explicit_command(not self.piped))
 
+    def test_using_pipes_when_non_piped_mode(self):
+        if self.piped:
+            return
+        import_statement = 'from pysource import stdin, stdout'
+        self.run_pysource_script([command.source_inline(import_statement)])
+        self.assertRaises(
+            sh.ErrorReturnCode,
+            self.run_pysource_script,
+            [command.source_def('function1(): stdin.read()'),
+             command.run('function1')])
+        self.assertRaises(
+            sh.ErrorReturnCode,
+            self.run_pysource_script,
+            [command.source_def('function1(): stdout.write("1")'),
+             command.run('function1')])
+
     def _test_run_explicit(self, run_explicit_command):
         output = self.run_pysource_script([
             command.source_def('function1(): return 1',
