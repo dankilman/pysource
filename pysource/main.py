@@ -26,6 +26,8 @@ from pysource import config
 class DaemonCommands(object):
     """Daemon related commands."""
 
+    namespace = 'daemon'
+
     @staticmethod
     def start():
         """Start the daemon process."""
@@ -164,7 +166,7 @@ def main():
     ])
     argh.add_commands(parser,
                       functions=DaemonCommands.commands(),
-                      namespace='daemon',
+                      namespace=DaemonCommands.namespace,
                       title=DaemonCommands.__doc__)
     argh.dispatch(parser, completion=False, errors_file=errors)
     if errors.len > 0:
