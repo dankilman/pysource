@@ -23,20 +23,32 @@ from pysource import client
 from pysource import config
 
 
-def daemon(action):
-    if action == 'start':
+class DaemonCommands(object):
+
+    @staticmethod
+    def start():
+        """Start the daemon process"""
         started = daemonizer.start()
         if not started:
             return 'Daemon already started'
-    elif action == 'stop':
+
+    @staticmethod
+    def stop():
+        """Stop the daemon process"""
         stopped = daemonizer.stop()
         if stopped:
             return 'Daemon stopped'
         else:
             return 'Daemon not running'
-    elif action == 'restart':
+
+    @staticmethod
+    def restart():
+        """Restart the daemon process"""
         daemonizer.restart()
-    elif action == 'status':
+
+    @staticmethod
+    def status():
+        """Check the daemon process status"""
         status, pid = daemonizer.status()
         if status == daemonizer.STATUS_STOPPED:
             return 'Daemon is (probably) stopped'
@@ -54,10 +66,10 @@ def daemon(action):
                        .format(config.pysource_dir)
         else:
             return 'Daemon is (probably) running (pid: {0})'.format(pid)
-    else:
-        raise pysource.error('unrecognized action: {0} '
-                             '[valid: start, stop, restart, status]'
-                             .format(action))
+
+    @classmethod
+    def commands(cls):
+        return [cls.start, cls.stop, cls.restart, cls.status]
 
 
 def list_registered():
@@ -119,8 +131,8 @@ def run_piped(function_name, *args):
 
 def main():
     errors = StringIO()
-    argh.dispatch_commands([
-        daemon,
+    parser = argh.ArghParser()
+    argh.add_commands(parser, [
         source,
         run,
         run_piped,
@@ -130,7 +142,14 @@ def main():
         source_def,
         source_inline,
         update_env
-    ], completion=False, errors_file=errors)
+    ])
+
+    argh.add_commands(parser,
+                      functions=DaemonCommands.commands(),
+                      namespace='daemon',
+                      title='Daemon related commands')
+
+    argh.dispatch(parser, completion=False, errors_file=errors)
     if errors.len > 0:
         sys.exit(errors.getvalue().strip())
 
