@@ -24,17 +24,18 @@ from pysource import config
 
 
 class DaemonCommands(object):
+    """Daemon related commands."""
 
     @staticmethod
     def start():
-        """Start the daemon process"""
+        """Start the daemon process."""
         started = daemonizer.start()
         if not started:
             return 'Daemon already started'
 
     @staticmethod
     def stop():
-        """Stop the daemon process"""
+        """Stop the daemon process."""
         stopped = daemonizer.stop()
         if stopped:
             return 'Daemon stopped'
@@ -43,12 +44,12 @@ class DaemonCommands(object):
 
     @staticmethod
     def restart():
-        """Restart the daemon process"""
+        """Restart the daemon process."""
         daemonizer.restart()
 
     @staticmethod
     def status():
-        """Check the daemon process status"""
+        """Check the daemon process status."""
         status, pid = daemonizer.status()
         if status == daemonizer.STATUS_STOPPED:
             return 'Daemon is (probably) stopped'
@@ -73,6 +74,7 @@ class DaemonCommands(object):
 
 
 def list_registered():
+    """List all functions currently registered."""
     descriptors = client.list_registered()
     if len(descriptors) == 0:
         yield 'No functions registered'
@@ -86,6 +88,10 @@ def list_registered():
 
 
 def update_env(verbose=False):
+    """
+    Update environment variables at the daemon with the current client
+    environment.
+    """
     status = client.update_env()
     if status != 'updated':
         raise pysource.error('Failed updating environment')
@@ -94,38 +100,51 @@ def update_env(verbose=False):
 
 
 def source_registered(verbose=False):
+    """Source all functions currently registered."""
     return client.source_registered(verbose=verbose)
 
 
 def source_named(function_name, piped=False, verbose=False):
+    """Source a function named by the first positional argument."""
     return client.source_named(function_name,
                                piped=piped,
                                verbose=verbose)
 
 
 def source_def(def_content, piped=False, verbose=False):
+    """Source an inline function definition."""
     return client.source_def(def_content,
                              piped=piped,
                              verbose=verbose)
 
 
 def source_inline(content, verbose=False):
+    """
+    Execute arbitrary code at the daemon. If code contains function
+    definitions, they will be sourced at the client.
+    """
     return client.source_content(content,
                                  verbose=verbose)
 
 
 def source(source_path, verbose=False):
+    """Source a file by its path."""
     return client.source_path(source_path,
                               verbose=verbose)
 
 
 def run(function_name, *args):
+    """Run the function named by the first positional argument."""
     result = client.run_function(function_name, args)
     if result:
         return result
 
 
 def run_piped(function_name, *args):
+    """
+    Run the function named by the first positional argument as a piped
+    function.
+    """
     client.run_piped_function(function_name, args)
 
 
@@ -147,7 +166,7 @@ def main():
     argh.add_commands(parser,
                       functions=DaemonCommands.commands(),
                       namespace='daemon',
-                      title='Daemon related commands')
+                      title=DaemonCommands.__doc__)
 
     argh.dispatch(parser, completion=False, errors_file=errors)
     if errors.len > 0:
