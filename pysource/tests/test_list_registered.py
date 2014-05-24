@@ -22,7 +22,7 @@ class ListRegisteredTest(WithDaemonTestCase):
     def test_list_empty(self):
         output = self.run_pysource_script([command.list_registered()])
         self.assertEqual(output,
-                         'No functions registered')
+                         'no functions registered')
 
     def test_list_full(self):
         output = self.run_pysource_script([
