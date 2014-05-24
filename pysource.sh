@@ -19,7 +19,7 @@ export PYSOURCE_PYTHON=${PYSOURCE_PYTHON="$(command \which python)"}
 pysource()
 {
     case "$1" in
-        daemon|list-registered|run|run-piped|update-env)
+        daemon|list-registered|run|run-piped|update-env|-h|--help)
             __pysource_main "$@"
             ;;
         source|source-registered|source-named|source-def|source-inline)
@@ -49,8 +49,7 @@ __pysource_source()
         if [[ $output == \#GENERATED_BY_PYSOURCE_VERBOSE* ]]
         then
             echo "Sourcing:"
-            printf "$output"
-            echo
+            echo "$output"
         fi
         eval "$output"
         return 0
