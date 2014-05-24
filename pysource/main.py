@@ -24,20 +24,20 @@ from pysource import config
 
 
 class DaemonCommands(object):
-    """Daemon related commands."""
+    """Daemon related commands"""
 
     namespace = 'daemon'
 
     @staticmethod
     def start():
-        """Start the daemon process."""
+        """Start the daemon process"""
         started = daemonizer.start()
         if not started:
             return 'Daemon already started'
 
     @staticmethod
     def stop():
-        """Stop the daemon process."""
+        """Stop the daemon process"""
         stopped = daemonizer.stop()
         if stopped:
             return 'Daemon stopped'
@@ -46,12 +46,12 @@ class DaemonCommands(object):
 
     @staticmethod
     def restart():
-        """Restart the daemon process."""
+        """Restart the daemon process"""
         daemonizer.restart()
 
     @staticmethod
     def status():
-        """Check the daemon process status."""
+        """Check the daemon process status"""
         status, pid = daemonizer.status()
         if status == daemonizer.STATUS_STOPPED:
             return 'Daemon is (probably) stopped'
@@ -76,7 +76,7 @@ class DaemonCommands(object):
 
 
 def list_registered():
-    """List all functions currently registered."""
+    """List all functions currently registered"""
     descriptors = client.list_registered()
     if len(descriptors) == 0:
         yield 'No functions registered'
@@ -92,7 +92,7 @@ def list_registered():
 def update_env(verbose=False):
     """
     Update environment variables at the daemon with the current client
-    environment.
+    environment
     """
     status = client.update_env()
     if status != 'updated':
@@ -102,13 +102,13 @@ def update_env(verbose=False):
 
 
 def source_registered(verbose=False):
-    """Source all functions currently registered."""
+    """Source all functions currently registered"""
     return client.source_registered(verbose=verbose)
 
 
 @argh.arg('function_name', help='The name of the function to source.')
 def source_named(function_name, piped=False, verbose=False):
-    """Source a function named by the first positional argument."""
+    """Source a function named by the first positional argument"""
     return client.source_named(function_name,
                                piped=piped,
                                verbose=verbose)
@@ -116,7 +116,7 @@ def source_named(function_name, piped=False, verbose=False):
 
 @argh.arg('def_content', help='The function definition itself.')
 def source_def(def_content, piped=False, verbose=False):
-    """Source an inline function definition."""
+    """Source an inline function definition"""
     return client.source_def(def_content,
                              piped=piped,
                              verbose=verbose)
@@ -126,7 +126,7 @@ def source_def(def_content, piped=False, verbose=False):
 def source_inline(content, verbose=False):
     """
     Execute arbitrary code at the daemon. If code contains function
-    definitions, they will be sourced at the client.
+    definitions, they will be sourced at the client
     """
     return client.source_content(content,
                                  verbose=verbose)
@@ -134,14 +134,14 @@ def source_inline(content, verbose=False):
 
 @argh.arg('source_path', help='The path to the file to source.')
 def source(source_path, verbose=False):
-    """Source a file by its path."""
+    """Source a file by its path"""
     return client.source_path(source_path,
                               verbose=verbose)
 
 
 @argh.arg('function_name', help='The name of the function to run.')
 def run(function_name, *args):
-    """Run the function named by the first positional argument."""
+    """Run the function named by the first positional argument"""
     result = client.run_function(function_name, args)
     if result:
         return result
@@ -151,7 +151,7 @@ def run(function_name, *args):
 def run_piped(function_name, *args):
     """
     Run the function named by the first positional argument as a piped
-    function.
+    function
     """
     client.run_piped_function(function_name, args)
 
@@ -169,7 +169,7 @@ def main():
         source_def,
         source_inline,
         update_env
-    ])
+    ], )
     argh.add_commands(parser,
                       functions=DaemonCommands.commands(),
                       namespace=DaemonCommands.namespace,
