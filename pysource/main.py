@@ -162,12 +162,10 @@ def main():
         source_inline,
         update_env
     ])
-
     argh.add_commands(parser,
                       functions=DaemonCommands.commands(),
                       namespace='daemon',
                       title=DaemonCommands.__doc__)
-
     argh.dispatch(parser, completion=False, errors_file=errors)
     if errors.len > 0:
         sys.exit(errors.getvalue().strip())
