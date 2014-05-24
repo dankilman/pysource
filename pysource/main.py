@@ -106,6 +106,7 @@ def source_registered(verbose=False):
     return client.source_registered(verbose=verbose)
 
 
+@argh.arg('function_name', help='The name of the function to source.')
 def source_named(function_name, piped=False, verbose=False):
     """Source a function named by the first positional argument."""
     return client.source_named(function_name,
@@ -113,6 +114,7 @@ def source_named(function_name, piped=False, verbose=False):
                                verbose=verbose)
 
 
+@argh.arg('def_content', help='The function definition itself.')
 def source_def(def_content, piped=False, verbose=False):
     """Source an inline function definition."""
     return client.source_def(def_content,
@@ -120,6 +122,7 @@ def source_def(def_content, piped=False, verbose=False):
                              verbose=verbose)
 
 
+@argh.arg('content', help='The code to execute at the daemon.')
 def source_inline(content, verbose=False):
     """
     Execute arbitrary code at the daemon. If code contains function
@@ -129,12 +132,14 @@ def source_inline(content, verbose=False):
                                  verbose=verbose)
 
 
+@argh.arg('source_path', help='The path to the file to source.')
 def source(source_path, verbose=False):
     """Source a file by its path."""
     return client.source_path(source_path,
                               verbose=verbose)
 
 
+@argh.arg('function_name', help='The name of the function to run.')
 def run(function_name, *args):
     """Run the function named by the first positional argument."""
     result = client.run_function(function_name, args)
@@ -142,6 +147,7 @@ def run(function_name, *args):
         return result
 
 
+@argh.arg('function_name', help='The name of the function to run.')
 def run_piped(function_name, *args):
     """
     Run the function named by the first positional argument as a piped
