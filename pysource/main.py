@@ -75,10 +75,10 @@ def list_registered():
 
 def update_env(verbose=False):
     status = client.update_env()
-    if status == 'updated' and verbose:
-        return 'Environment updated'
-    else:
+    if status != 'updated':
         raise pysource.error('Failed updating environment')
+    if verbose:
+        return 'Environment updated'
 
 
 def source_registered(verbose=False):

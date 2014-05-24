@@ -26,6 +26,7 @@ sh.ErrorReturnCode.truncate_cap = 2 ** 32
 
 from pysource import config
 from pysource import daemonizer
+from pysource.config import PYSOURCE_HOME_ENV
 
 from pysource.tests import command
 
@@ -70,7 +71,7 @@ class BaseTestCase(TestCase):
         script_path = self._create_script(commands)
         if env is None:
             env = os.environ.copy()
-        env['PYSOURCE_HOME'] = self.workdir
+        env[PYSOURCE_HOME_ENV] = self.workdir
         conf = {'_env': env}
         if _in is not None:
             conf['_in'] = _in
@@ -90,8 +91,9 @@ class BaseTestCase(TestCase):
     def _create_script(self, commands):
         script_path = tempfile.mktemp(prefix='pysource-', dir=self.workdir)
         with open(script_path, 'w') as f:
+            set_e_command = 'set -e'
             source_command = 'source $(which pysource.sh)'
-            commands = [source_command] + commands
+            commands = [set_e_command, source_command] + commands
             script_content = '\n'.join(commands)
             f.write(script_content)
         return script_path

@@ -16,6 +16,8 @@
 from os.path import expanduser
 from os import environ
 
+PYSOURCE_HOME_ENV = 'PYSOURCE_HOME'
 DEFAULT_PYSOURCE_HOME = '~/.pysource'
-pysource_dir = expanduser(environ.get('PYSOURCE_HOME',
+
+pysource_dir = expanduser(environ.get(PYSOURCE_HOME_ENV,
                                       DEFAULT_PYSOURCE_HOME))

@@ -422,16 +422,7 @@ def do_piped_client_request(req_type, payload):
 
 
 def _do_client_request(req_type, payload, pipe_handler=None):
-    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    try:
-        sock.connect(unix_socket_path())
-    except socket.error, e:
-        if e.errno in [errno.ENOENT, errno.ECONNREFUSED]:
-            raise pysource.error('Is the pysource daemon running?'
-                                 ' Run "pysource daemon start" to start it.')
-        else:
-            raise
-
+    sock = _client_connect()
     req = sock.makefile('wb', 0)
     res = sock.makefile('rb', -1)
     piped = pipe_handler is not None
@@ -458,6 +449,20 @@ def _do_client_request(req_type, payload, pipe_handler=None):
         req.close()
         res.close()
         sock.close()
+
+
+def _client_connect():
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        sock.connect(unix_socket_path())
+    except socket.error, e:
+        if e.errno in [errno.ENOENT, errno.ECONNREFUSED]:
+            raise pysource.error('Is the pysource daemon running? '
+                                 'Run "pysource daemon start" to start '
+                                 'it.')
+        else:
+            raise
+    return sock
 
 
 def _read_body(sock):
