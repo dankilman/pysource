@@ -35,4 +35,4 @@ class UpdateEnvTest(WithDaemonTestCase):
     def test_update_env_verbose(self):
         output = self.run_pysource_script([
             command.update_env(verbose=True)])
-        self.assertEqual(output, 'Environment updated')
+        self.assertEqual(output, 'environment updated')

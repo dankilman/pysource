@@ -30,45 +30,45 @@ class DaemonCommands(object):
 
     @staticmethod
     def start():
-        """Start the daemon process"""
+        """start the daemon process"""
         started = daemonizer.start()
         if not started:
-            return 'Daemon already started'
+            return 'daemon already started'
 
     @staticmethod
     def stop():
-        """Stop the daemon process"""
+        """stop the daemon process"""
         stopped = daemonizer.stop()
         if stopped:
-            return 'Daemon stopped'
+            return 'daemon stopped'
         else:
-            return 'Daemon not running'
+            return 'daemon not running'
 
     @staticmethod
     def restart():
-        """Restart the daemon process"""
+        """restart the daemon process"""
         daemonizer.restart()
 
     @staticmethod
     def status():
-        """Check the daemon process status"""
+        """check the daemon process status"""
         status, pid = daemonizer.status()
         if status == daemonizer.STATUS_STOPPED:
-            return 'Daemon is (probably) stopped'
+            return 'daemon is (probably) stopped'
         elif status == daemonizer.STATUS_CORRUPTED:
             if pid:
-                return 'Daemon pidfile exists but process does not seem ' \
-                       'to be running (pid: {0}). You should probably clean ' \
+                return 'daemon pidfile exists but process does not seem ' \
+                       'to be running (pid: {0}). you should probably clean ' \
                        'the files in {1} and manually check if there' \
-                       ' is a daemon running somewhere.'\
+                       ' is a daemon running somewhere'\
                        .format(pid, config.pysource_dir)
             else:
-                return 'Daemon seems to be in an unstable state. Manually ' \
+                return 'daemon seems to be in an unstable state. manually ' \
                        'remove the files in {0} and kill leftover daemon ' \
-                       'processes (if there are any).'\
+                       'processes (if there are any)'\
                        .format(config.pysource_dir)
         else:
-            return 'Daemon is (probably) running (pid: {0})'.format(pid)
+            return 'daemon is (probably) running (pid: {0})'.format(pid)
 
     @classmethod
     def commands(cls):
@@ -76,12 +76,12 @@ class DaemonCommands(object):
 
 
 def list_registered():
-    """List all functions currently registered"""
+    """list all functions currently registered"""
     descriptors = client.list_registered()
     if len(descriptors) == 0:
-        yield 'No functions registered'
+        yield 'no functions registered'
     else:
-        yield 'Registered functions:'
+        yield 'registered functions:'
         for descriptor in descriptors:
             name = descriptor['name']
             piped = descriptor['piped']
@@ -91,66 +91,66 @@ def list_registered():
 
 def update_env(verbose=False):
     """
-    Update environment variables at the daemon with the current client
+    update environment variables at the daemon with the current client
     environment
     """
     status = client.update_env()
     if status != 'updated':
-        raise pysource.error('Failed updating environment')
+        raise pysource.error('failed updating environment')
     if verbose:
-        return 'Environment updated'
+        return 'environment updated'
 
 
 def source_registered(verbose=False):
-    """Source all functions currently registered"""
+    """source all functions currently registered"""
     return client.source_registered(verbose=verbose)
 
 
-@argh.arg('function_name', help='The name of the function to source.')
+@argh.arg('function_name', help='the name of the function to source')
 def source_named(function_name, piped=False, verbose=False):
-    """Source a function named by the first positional argument"""
+    """source a function named by the first positional argument"""
     return client.source_named(function_name,
                                piped=piped,
                                verbose=verbose)
 
 
-@argh.arg('def_content', help='The function definition itself.')
+@argh.arg('def_content', help='the function definition itself')
 def source_def(def_content, piped=False, verbose=False):
-    """Source an inline function definition"""
+    """source an inline function definition"""
     return client.source_def(def_content,
                              piped=piped,
                              verbose=verbose)
 
 
-@argh.arg('content', help='The code to execute at the daemon.')
+@argh.arg('content', help='the code to execute at the daemon')
 def source_inline(content, verbose=False):
     """
-    Execute arbitrary code at the daemon. If code contains function
+    execute arbitrary code at the daemon. if code contains function
     definitions, they will be sourced at the client
     """
     return client.source_content(content,
                                  verbose=verbose)
 
 
-@argh.arg('source_path', help='The path to the file to source.')
+@argh.arg('source_path', help='the path to the file to source')
 def source(source_path, verbose=False):
-    """Source a file by its path"""
+    """source a file by its path"""
     return client.source_path(source_path,
                               verbose=verbose)
 
 
-@argh.arg('function_name', help='The name of the function to run.')
+@argh.arg('function_name', help='the name of the function to run')
 def run(function_name, *args):
-    """Run the function named by the first positional argument"""
+    """run the function named by the first positional argument"""
     result = client.run_function(function_name, args)
     if result:
         return result
 
 
-@argh.arg('function_name', help='The name of the function to run.')
+@argh.arg('function_name', help='the name of the function to run')
 def run_piped(function_name, *args):
     """
-    Run the function named by the first positional argument as a piped
+    run the function named by the first positional argument as a piped
     function
     """
     client.run_piped_function(function_name, args)

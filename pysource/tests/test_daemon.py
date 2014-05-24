@@ -69,18 +69,15 @@ class DaemonTest(BaseTestCase):
 
     def test_status_running(self):
         self.test_start_not_running()
-        self.assertTrue('Daemon is (probably) running'
-                        in self.daemon_status())
+        self.assertIn('daemon is (probably) running', self.daemon_status())
 
     def test_status_not_running(self):
-        self.assertEqual('Daemon is (probably) stopped',
-                         self.daemon_status())
+        self.assertIn('daemon is (probably) stopped', self.daemon_status())
 
     def test_status_corrupted(self):
         self.test_start_not_running()
         self.kill_daemon()
-        self.assertTrue('Daemon pidfile exists but'
-                        in self.daemon_status())
+        self.assertIn('daemon pidfile exists but', self.daemon_status())
 
     def test_unknown_action(self):
         self.assertRaises(sh.ErrorReturnCode,
